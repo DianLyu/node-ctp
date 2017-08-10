@@ -100,9 +100,9 @@ void WrapTrader::initEventMap() {
 	event_map["rspError"] = T_ON_RSPERROR;
 }
 
-Handle<Value> WrapTrader::New(const Arguments& args) {
-	HandleScope scope;
-
+Handle<Value> WrapTrader::New(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	HandleScope scope(isolate);
 	if (event_map.size() == 0)
 		initEventMap();
 	WrapTrader* obj = new WrapTrader();
@@ -110,8 +110,9 @@ Handle<Value> WrapTrader::New(const Arguments& args) {
 	return args.This();
 }
 
-Handle<Value> WrapTrader::NewInstance(const Arguments& args) {
-	HandleScope scope;
+Handle<Value> WrapTrader::NewInstance(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	HandleScope scope(isolate);
 
 	const unsigned argc = 1;
 	Handle<Value> argv[argc] = { args[0] };
@@ -119,7 +120,7 @@ Handle<Value> WrapTrader::NewInstance(const Arguments& args) {
 	return scope.Close(instance);
 }
 
-Handle<Value> WrapTrader::On(const Arguments& args) {
+Handle<Value> WrapTrader::On(const FunctionCallbackInfo<Value>& args) {
 	HandleScope scope;
 	if (args[0]->IsUndefined() || args[1]->IsUndefined()) {
 		logger_cout("Wrong arguments->event name or function");
@@ -153,7 +154,7 @@ Handle<Value> WrapTrader::On(const Arguments& args) {
 	return scope.Close(Int32::New(0));
 }
 
-Handle<Value> WrapTrader::Connect(const Arguments& args) {
+Handle<Value> WrapTrader::Connect(const FunctionCallbackInfo<Value>& args) {
 	HandleScope scope;	
 	std::string log = "wrap_trader Connect------>";
 	if (args[0]->IsUndefined()) {
@@ -193,7 +194,7 @@ Handle<Value> WrapTrader::Connect(const Arguments& args) {
 	return scope.Close(Undefined());
 }
 
-Handle<Value> WrapTrader::ReqUserLogin(const Arguments& args) {
+Handle<Value> WrapTrader::ReqUserLogin(const FunctionCallbackInfo<Value>& args) {
 	HandleScope scope;
 	std::string log = "wrap_trader ReqUserLogin------>";
 	if (args[0]->IsUndefined() || args[1]->IsUndefined() || args[2]->IsUndefined()) {
@@ -229,7 +230,7 @@ Handle<Value> WrapTrader::ReqUserLogin(const Arguments& args) {
 	return scope.Close(Undefined());
 }
 
-Handle<Value> WrapTrader::ReqUserLogout(const Arguments& args) {
+Handle<Value> WrapTrader::ReqUserLogout(const FunctionCallbackInfo<Value>& args) {
 	HandleScope scope;
 	std::string log = "wrap_trader ReqUserLogout------>";
 
@@ -262,7 +263,7 @@ Handle<Value> WrapTrader::ReqUserLogout(const Arguments& args) {
 	return scope.Close(Undefined());
 }
 
-Handle<Value> WrapTrader::ReqSettlementInfoConfirm(const Arguments& args) {
+Handle<Value> WrapTrader::ReqSettlementInfoConfirm(const FunctionCallbackInfo<Value>& args) {
 	HandleScope scope;
 	std::string log = "wrap_trader ReqSettlementInfoConfirm------>";
 
@@ -295,7 +296,7 @@ Handle<Value> WrapTrader::ReqSettlementInfoConfirm(const Arguments& args) {
 	return scope.Close(Undefined());
 }
 
-Handle<Value> WrapTrader::ReqQryInstrument(const Arguments& args) {
+Handle<Value> WrapTrader::ReqQryInstrument(const FunctionCallbackInfo<Value>& args) {
 	HandleScope scope;
 	std::string log = "wrap_trader ReqQryInstrument------>";
 
@@ -325,7 +326,7 @@ Handle<Value> WrapTrader::ReqQryInstrument(const Arguments& args) {
 	return scope.Close(Undefined());
 }
 
-Handle<Value> WrapTrader::ReqQryTradingAccount(const Arguments& args) {
+Handle<Value> WrapTrader::ReqQryTradingAccount(const FunctionCallbackInfo<Value>& args) {
 	HandleScope scope;
 	std::string log = "wrap_trader ReqQryTradingAccount------>";
 
@@ -357,7 +358,7 @@ Handle<Value> WrapTrader::ReqQryTradingAccount(const Arguments& args) {
 	return scope.Close(Undefined());
 }
 
-Handle<Value> WrapTrader::ReqQryInvestorPosition(const Arguments& args) {
+Handle<Value> WrapTrader::ReqQryInvestorPosition(const FunctionCallbackInfo<Value>& args) {
 	HandleScope scope;
 	std::string log = "wrap_trader ReqQryInvestorPosition------>";
 
@@ -393,7 +394,7 @@ Handle<Value> WrapTrader::ReqQryInvestorPosition(const Arguments& args) {
 	return scope.Close(Undefined());
 }
 
-Handle<Value> WrapTrader::ReqQryInvestorPositionDetail(const Arguments& args) {
+Handle<Value> WrapTrader::ReqQryInvestorPositionDetail(const FunctionCallbackInfo<Value>& args) {
 	HandleScope scope;
 	std::string log = "wrap_trader ReqQryInvestorPositionDetail------>";
 
@@ -429,7 +430,7 @@ Handle<Value> WrapTrader::ReqQryInvestorPositionDetail(const Arguments& args) {
 	return scope.Close(Undefined());
 }
 
-Handle<Value> WrapTrader::ReqOrderInsert(const Arguments& args) {
+Handle<Value> WrapTrader::ReqOrderInsert(const FunctionCallbackInfo<Value>& args) {
 	HandleScope scope;
 	std::string log = "wrap_trader ReqOrderInsert------>";
 
@@ -598,7 +599,7 @@ Handle<Value> WrapTrader::ReqOrderInsert(const Arguments& args) {
 	return scope.Close(Undefined());
 }
 
-Handle<Value> WrapTrader::ReqOrderAction(const Arguments& args) {
+Handle<Value> WrapTrader::ReqOrderAction(const FunctionCallbackInfo<Value>& args) {
 	HandleScope scope;
 	std::string log = "wrap_trader ReqOrderAction------>";
 
@@ -693,7 +694,7 @@ Handle<Value> WrapTrader::ReqOrderAction(const Arguments& args) {
 	return scope.Close(Undefined());
 }
 
-Handle<Value> WrapTrader::ReqQryInstrumentMarginRate(const Arguments& args) {
+Handle<Value> WrapTrader::ReqQryInstrumentMarginRate(const FunctionCallbackInfo<Value>& args) {
 	HandleScope scope;
 	std::string log = "wrap_trader ReqQryInstrumentMarginRate------>";
 
@@ -737,7 +738,7 @@ Handle<Value> WrapTrader::ReqQryInstrumentMarginRate(const Arguments& args) {
 	return scope.Close(Undefined());
 }
 
-Handle<Value> WrapTrader::ReqQryDepthMarketData(const Arguments& args) {
+Handle<Value> WrapTrader::ReqQryDepthMarketData(const FunctionCallbackInfo<Value>& args) {
 	HandleScope scope;
 	std::string log = "wrap_trader ReqQryDepthMarketData------>";
 
@@ -768,7 +769,7 @@ Handle<Value> WrapTrader::ReqQryDepthMarketData(const Arguments& args) {
 	return scope.Close(Undefined());
 }
 
-Handle<Value> WrapTrader::ReqQrySettlementInfo(const Arguments& args) {
+Handle<Value> WrapTrader::ReqQrySettlementInfo(const FunctionCallbackInfo<Value>& args) {
 	HandleScope scope;
 	std::string log = "wrap_trader ReqQrySettlementInfo------>";
 
@@ -808,7 +809,7 @@ Handle<Value> WrapTrader::ReqQrySettlementInfo(const Arguments& args) {
 	return scope.Close(Undefined());
 }
 
-Handle<Value> WrapTrader::Disposed(const Arguments& args) {
+Handle<Value> WrapTrader::Disposed(const FunctionCallbackInfo<Value>& args) {
 	HandleScope scope;
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	obj->uvTrader->Disconnect();	
@@ -826,7 +827,7 @@ Handle<Value> WrapTrader::Disposed(const Arguments& args) {
 	return scope.Close(Undefined());
 }
 
-Handle<Value> WrapTrader::GetTradingDay(const Arguments& args){
+Handle<Value> WrapTrader::GetTradingDay(const FunctionCallbackInfo<Value>& args){
     HandleScope scope;
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	const char* tradingDay = obj->uvTrader->GetTradingDay();

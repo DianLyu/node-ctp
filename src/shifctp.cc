@@ -1,5 +1,7 @@
 #include <node.h>
 #include <v8.h>
+
+
 #include "wrap_trader.h"
 #include "wrap_mduser.h"
 
@@ -7,17 +9,17 @@ using namespace v8;
 
 bool islog;//log?
 
-Handle<Value> CreateTrader(const Arguments& args) {
+Handle<Value> CreateTrader(const FunctionCallbackInfo<Value>& args) {
   HandleScope scope;
   return scope.Close(WrapTrader::NewInstance(args));
 }
 
-Handle<Value> CreateMdUser(const Arguments& args) {
+Handle<Value> CreateMdUser(const FunctionCallbackInfo<Value>& args) {
 	HandleScope scope;
 	return scope.Close(WrapMdUser::NewInstance(args));
 }
 
-Handle<Value> Settings(const Arguments& args) {
+Handle<Value> Settings(const FunctionCallbackInfo<Value>& args) {
 	HandleScope scope;
 
 	if (!args[0]->IsUndefined() && args[0]->IsObject()) {
