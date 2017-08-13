@@ -1,6 +1,6 @@
 #include <node.h>
 #include <v8.h>
-
+#include "defines.h"
 
 #include "wrap_trader.h"
 #include "wrap_mduser.h"
@@ -9,39 +9,29 @@ using namespace v8;
 
 bool islog;//log?
 
-Handle<Value> CreateTrader(const FunctionCallbackInfo<Value>& args) {
-  HandleScope scope;
-  return scope.Close(WrapTrader::NewInstance(args));
-}
+//Handle<Value> CreateTrader(const FunctionCallbackInfo<Value>& args) {
+//  return WrapTrader::NewInstance(args);
+//}
 
-Handle<Value> CreateMdUser(const FunctionCallbackInfo<Value>& args) {
-	HandleScope scope;
-	return scope.Close(WrapMdUser::NewInstance(args));
-}
+//Handle<Value> CreateMdUser(const FunctionCallbackInfo<Value>& args) {
+//	return WrapMdUser::NewInstance(args);
+//}
 
-Handle<Value> Settings(const FunctionCallbackInfo<Value>& args) {
-	HandleScope scope;
-
+void Settings(const FunctionCallbackInfo<Value>& args) {
+	SCOPE(args)
 	if (!args[0]->IsUndefined() && args[0]->IsObject()) {
 		Local<Object> setting = args[0]->ToObject();
-		Local<Value> log = setting->Get(v8::String::New("log"));
+		Local<Value> log = setting->Get(String::NewFromUtf8(isolate,"log"));
 		if (!log->IsUndefined()) {
 			islog = log->BooleanValue();
-		}		
+		}
 	}
-
-	return scope.Close(Undefined());
 }
 
-void Init(Handle<Object> exports) {
-	WrapTrader::Init(0);
-	WrapMdUser::Init(0);
-	exports->Set(String::NewSymbol("createTrader"),
-		FunctionTemplate::New(CreateTrader)->GetFunction());
-	exports->Set(String::NewSymbol("createMdUser"),
-		FunctionTemplate::New(CreateMdUser)->GetFunction());
-	exports->Set(String::NewSymbol("settings"),
-		FunctionTemplate::New(Settings)->GetFunction());
+void Init(Handle<Object> exports, v8::Local<v8::Value> module, void* priv) {
+	WrapTrader::Init(exports);
+	WrapMdUser::Init(exports);
+	NODE_SET_METHOD(exports, "settings", Settings);
 }
 
 NODE_MODULE(shifctp, Init)

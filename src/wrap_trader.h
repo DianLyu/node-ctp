@@ -27,43 +27,41 @@ public:
 	~WrapTrader(void);
 
 	///连接前置机
-	static Handle<Value> Connect(const FunctionCallbackInfo<Value>& args);	
+	static void Connect(const FunctionCallbackInfo<Value>& args);	
 	///注册事件
-	static Handle<Value> On(const FunctionCallbackInfo<Value>& args);
+	static void On(const FunctionCallbackInfo<Value>& args);
 	///用户登录请求
-	static Handle<Value> ReqUserLogin(const FunctionCallbackInfo<Value>& args);
+	static void ReqUserLogin(const FunctionCallbackInfo<Value>& args);
 	///登出请求 
-	static Handle<Value> ReqUserLogout(const FunctionCallbackInfo<Value>& args);
+	static void ReqUserLogout(const FunctionCallbackInfo<Value>& args);
 	///投资者结算结果确认
-	static Handle<Value> ReqSettlementInfoConfirm(const FunctionCallbackInfo<Value>& args);
+	static void ReqSettlementInfoConfirm(const FunctionCallbackInfo<Value>& args);
 	///请求查询合约
-	static Handle<Value> ReqQryInstrument(const FunctionCallbackInfo<Value>& args);
+	static void ReqQryInstrument(const FunctionCallbackInfo<Value>& args);
 	///请求查询资金账户
-	static Handle<Value> ReqQryTradingAccount(const FunctionCallbackInfo<Value>& args);
+	static void ReqQryTradingAccount(const FunctionCallbackInfo<Value>& args);
 	///请求查询投资者持仓
-	static Handle<Value> ReqQryInvestorPosition(const FunctionCallbackInfo<Value>& args);
+	static void ReqQryInvestorPosition(const FunctionCallbackInfo<Value>& args);
 	///持仓明细
-	static Handle<Value> ReqQryInvestorPositionDetail(const FunctionCallbackInfo<Value>& args);
+	static void ReqQryInvestorPositionDetail(const FunctionCallbackInfo<Value>& args);
 	///报单录入请求
-	static Handle<Value> ReqOrderInsert(const FunctionCallbackInfo<Value>& args);
+	static void ReqOrderInsert(const FunctionCallbackInfo<Value>& args);
 	///报单操作请求
-	static Handle<Value> ReqOrderAction(const FunctionCallbackInfo<Value>& args);
+	static void ReqOrderAction(const FunctionCallbackInfo<Value>& args);
 	///请求查询合约保证金率 
-	static Handle<Value> ReqQryInstrumentMarginRate(const FunctionCallbackInfo<Value>& args);
+	static void ReqQryInstrumentMarginRate(const FunctionCallbackInfo<Value>& args);
 	///请求查询行情 
-	static Handle<Value> ReqQryDepthMarketData(const FunctionCallbackInfo<Value>& args);
+	static void ReqQryDepthMarketData(const FunctionCallbackInfo<Value>& args);
 	///请求查询投资者结算结果 
-	static Handle<Value> ReqQrySettlementInfo(const FunctionCallbackInfo<Value>& args);
+	static void ReqQrySettlementInfo(const FunctionCallbackInfo<Value>& args);
 	///删除接口对象
-	static Handle<Value> Disposed(const FunctionCallbackInfo<Value>& args);
+	static void Disposed(const FunctionCallbackInfo<Value>& args);
 	//对象初始化
-	static void Init(int args);
-	static Handle<Value> NewInstance(const FunctionCallbackInfo<Value>& args);
-    static Handle<Value> GetTradingDay(const FunctionCallbackInfo<Value>& args);
+	static void Init(Handle<Object> args);
+    static void GetTradingDay(const FunctionCallbackInfo<Value>& args);
 
 private:
 	static void initEventMap();	
-	static Handle<Value> New(const FunctionCallbackInfo<Value>& args);
 	static void pkg_cb_userlogin(CbRtnField* data, Local<Value>*cbArray);
 	static void pkg_cb_userlogout(CbRtnField* data, Local<Value>*cbArray);
 	static void pkg_cb_confirm(CbRtnField* data, Local<Value>*cbArray);
