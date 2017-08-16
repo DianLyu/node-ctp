@@ -1,13 +1,13 @@
 #include <node.h>
 #include "wrap_trader.h"
 #include "defines.h"
-DECL_CONSTR(WrapTrader)
+
 int WrapTrader::s_uuid;
 std::map<const char*, int,ptrCmp> WrapTrader::event_map;
-std::map<int, Persistent<Function> > WrapTrader::callback_map;
-std::map<int, Persistent<Function> > WrapTrader::fun_rtncb_map;
+std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > WrapTrader::callback_map;
+std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > WrapTrader::fun_rtncb_map;
 
-WrapTrader::WrapTrader() {	
+WrapTrader::WrapTrader(const FunctionCallbackInfo<Value>& args) {
 	logger_cout("wrap_trader------>object start init");
 	uvTrader = new uv_trader();	
 	logger_cout("wrap_trader------>object init successed");
@@ -19,7 +19,7 @@ WrapTrader::~WrapTrader(void) {
     }
 	logger_cout("wrap_trader------>object destroyed");
 }
-
+Persistent<Function> Constructor<WrapTrader>::constructor;
 void WrapTrader::Init(Handle<Object> target) {
 	NEW_CONSTR(WrapTrader);
 	initEventMap();
@@ -85,14 +85,14 @@ FUNCTIONCALLBACK(WrapTrader::On)
 		return;
 	}
 
-	std::map<int, Persistent<Function> >::iterator cIt = callback_map.find(eIt->second);
+	auto cIt = callback_map.find(eIt->second);
 	if (cIt != callback_map.end()) {
 		logger_cout("Callback is defined before");
 		isolate->ThrowException(Exception::TypeError(GETLOCAL("Callback is defined before")));
 		return;
 	}
-
-	callback_map[eIt->second] = Persistent<Function>(isolate,cb);
+	AddToMap(callback_map, eIt->second, cb);
+	//callback_map[eIt->second] = Persistent<Function>(isolate,cb);
 	obj->uvTrader->On(*eNameAscii,eIt->second, FunCallback);
 	args.GetReturnValue().Set(GETLOCAL(0));
 }
@@ -114,7 +114,7 @@ FUNCTIONCALLBACK(WrapTrader::Connect)
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[4]->IsUndefined() && args[4]->IsFunction()) {
 		uuid = ++s_uuid;
-		fun_rtncb_map[uuid] = Persistent<Function>(isolate,Local<Function>::Cast(args[4]));
+		AddToMap(fun_rtncb_map, uuid, Local<Function>::Cast(args[4]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -154,7 +154,8 @@ FUNCTIONCALLBACK(WrapTrader::ReqUserLogin)
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[3]->IsUndefined() && args[3]->IsFunction()) {
 		uuid = ++s_uuid;
-		fun_rtncb_map[uuid] = Persistent<Function>(isolate,Local<Function>::Cast(args[3]));
+		AddToMap(fun_rtncb_map, uuid, Local<Function>::Cast(args[3]));
+		//AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[3]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -191,7 +192,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqUserLogout)
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[2]->IsUndefined() && args[2]->IsFunction()) {
 		uuid = ++s_uuid;
-		fun_rtncb_map[uuid] = Persistent<Function>(isolate,Local<Function>::Cast(args[2]));
+		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[2]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -225,7 +226,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqSettlementInfoConfirm)
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[2]->IsUndefined() && args[2]->IsFunction()) {
 		uuid = ++s_uuid;
-		fun_rtncb_map[uuid] = Persistent<Function>(isolate,Local<Function>::Cast(args[2]));
+		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[2]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}	 
@@ -259,7 +260,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryInstrument)
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[1]->IsUndefined() && args[1]->IsFunction()) {
 		uuid = ++s_uuid;
-		fun_rtncb_map[uuid] = Persistent<Function>(isolate,Local<Function>::Cast(args[1]));
+		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[1]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -290,7 +291,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryTradingAccount)
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[2]->IsUndefined() && args[2]->IsFunction()) {
 		uuid = ++s_uuid;
-		fun_rtncb_map[uuid] = Persistent<Function>(isolate,Local<Function>::Cast(args[2]));
+		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[2]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -323,7 +324,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryInvestorPosition)
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[3]->IsUndefined() && args[3]->IsFunction()) {
 		uuid = ++s_uuid;
-		fun_rtncb_map[uuid] = Persistent<Function>(isolate,Local<Function>::Cast(args[3]));
+		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[3]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -360,7 +361,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryInvestorPositionDetail)
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[3]->IsUndefined() && args[3]->IsFunction()) {
 		uuid = ++s_uuid;
-		fun_rtncb_map[uuid] = Persistent<Function>(isolate,Local<Function>::Cast(args[3]));
+		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[3]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -396,7 +397,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqOrderInsert)
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[1]->IsUndefined() && args[1]->IsFunction()) {
 		uuid = ++s_uuid;
-		fun_rtncb_map[uuid] = Persistent<Function>(isolate,Local<Function>::Cast(args[1]));
+		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[1]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -586,7 +587,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqOrderAction)
 
 	if (!args[1]->IsUndefined() && args[1]->IsFunction()) {
 		uuid = ++s_uuid;
-		fun_rtncb_map[uuid] = Persistent<Function>(isolate,Local<Function>::Cast(args[1]));
+		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[1]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -685,7 +686,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryInstrumentMarginRate)
 
 	if (!args[4]->IsUndefined() && args[4]->IsFunction()) {
 		uuid = ++s_uuid;
-		fun_rtncb_map[uuid] = Persistent<Function>(isolate,Local<Function>::Cast(args[4]));
+		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[4]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -729,7 +730,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryDepthMarketData)
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[1]->IsUndefined() && args[1]->IsFunction()) {
 		uuid = ++s_uuid;
-		fun_rtncb_map[uuid] = Persistent<Function>(isolate,Local<Function>::Cast(args[1]));
+		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[1]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -761,7 +762,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqQrySettlementInfo)
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[3]->IsUndefined() && args[3]->IsFunction()) {
 		uuid = ++s_uuid;
-		fun_rtncb_map[uuid] = Persistent<Function>(isolate,Local<Function>::Cast(args[3]));
+		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[3]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -792,7 +793,7 @@ FUNCTIONCALLBACK(WrapTrader::Disposed)
 	
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	obj->uvTrader->Disconnect();	
-	std::map<int, Persistent<Function> >::iterator callback_it = callback_map.begin();
+	auto callback_it = callback_map.begin();
 	while (callback_it != callback_map.end()) {
 		callback_it->second.Reset();
 		callback_it++;
@@ -814,7 +815,7 @@ FUNCTIONCALLBACK(WrapTrader::GetTradingDay)
 void WrapTrader::FunCallback(CbRtnField *data) {
 	Isolate *isolate = Isolate::GetCurrent();
 	HandleScope scope(isolate);
-	std::map<int, Persistent<Function> >::iterator cIt = callback_map.find(data->eFlag);
+	auto cIt = callback_map.find(data->eFlag);
 	if (cIt == callback_map.end())
 		return;
 #define FunCallback_Switch(type,count,...) case type:{\
@@ -825,866 +826,805 @@ break;\
 }
 	switch (data->eFlag) {
 		FunCallback_Switch(T_ON_CONNECT, 1, ={ Undefined(isolate) };)
-			FunCallback_Switch(T_ON_DISCONNECTED, 1, ={ GETLOCAL(data->nReason) };)
-			FunCallback_Switch(T_ON_RSPUSERLOGIN, 4, ; pkg_cb_userlogin(data, argv);)
-	
-	case T_ON_RSPUSERLOGOUT:
-	{
-							   Local<Value> argv[4];
-							   pkg_cb_userlogout(data, argv);
-							   cIt->second->Call(Context::GetCurrent()->Global(), 4, argv);
-							   break;
-	}
-	case T_ON_RSPINFOCONFIRM:
-	{
-								Local<Value> argv[4];
-								pkg_cb_confirm(data, argv);
-								cIt->second->Call(Context::GetCurrent()->Global(), 4, argv);
-								break;
-	}
-	case T_ON_RSPINSERT:
-	{
-						   Local<Value> argv[4];
-						   pkg_cb_orderinsert(data, argv);
-						   cIt->second->Call(Context::GetCurrent()->Global(), 4, argv);
-						   break;
-	}
-	case T_ON_ERRINSERT:
-	{
-						   Local<Value> argv[2];
-						   pkg_cb_errorderinsert(data, argv);
-						   cIt->second->Call(Context::GetCurrent()->Global(), 2, argv);
-						   break;
-	}
-	case T_ON_RSPACTION:
-	{
-						   Local<Value> argv[4];
-						   pkg_cb_orderaction(data, argv);
-						   cIt->second->Call(Context::GetCurrent()->Global(), 4, argv);
-						   break;
-	}
-	case T_ON_ERRACTION:
-	{
-						   Local<Value> argv[2];
-						   pkg_cb_errorderaction(data, argv);
-						   cIt->second->Call(Context::GetCurrent()->Global(), 2, argv);
-
-						   break;
-	}
-	case T_ON_RQORDER:
-	{
-						 Local<Value> argv[4];
-						 pkg_cb_rspqryorder(data, argv);
-						 cIt->second->Call(Context::GetCurrent()->Global(), 4, argv);
-						 break;
-	}
-	case T_ON_RTNORDER:
-	{
-						  Local<Value> argv[1];
-						  pkg_cb_rtnorder(data, argv);
-						  cIt->second->Call(Context::GetCurrent()->Global(), 1, argv);
-
-						  break;
-	}
-	case T_ON_RQTRADE:
-	{
-						 Local<Value> argv[4];
-						 pkg_cb_rqtrade(data, argv);
-						 cIt->second->Call(Context::GetCurrent()->Global(), 4, argv);
-
-						 break;
-	}
-	case T_ON_RTNTRADE:
-	{
-						  Local<Value> argv[1];
-						  pkg_cb_rtntrade(data, argv);
-						  cIt->second->Call(Context::GetCurrent()->Global(), 1, argv);
-
-						  break;
-	}
-	case T_ON_RQINVESTORPOSITION:
-	{
-									Local<Value> argv[4];
-									pkg_cb_rqinvestorposition(data, argv);
-									cIt->second->Call(Context::GetCurrent()->Global(), 4, argv);
-
-									break;
-	}
-	case T_ON_RQINVESTORPOSITIONDETAIL:
-	{
-										  Local<Value> argv[4];
-										  pkg_cb_rqinvestorpositiondetail(data, argv);
-										  cIt->second->Call(Context::GetCurrent()->Global(), 4, argv);
-
-										  break;
-	}
-	case T_ON_RQTRADINGACCOUNT:
-	{
-								  Local<Value> argv[4];
-								  pkg_cb_rqtradingaccount(data, argv);
-								  cIt->second->Call(Context::GetCurrent()->Global(), 4, argv);
-
-								  break;
-	}
-	case T_ON_RQINSTRUMENT:
-	{
-							  Local<Value> argv[4];
-							  pkg_cb_rqinstrument(data, argv);
-							  cIt->second->Call(Context::GetCurrent()->Global(), 4, argv);
-
-							  break;
-	}
-	case T_ON_RQDEPTHMARKETDATA:
-	{
-								   Local<Value> argv[4];
-								   pkg_cb_rqdepthmarketdata(data, argv);
-								   cIt->second->Call(Context::GetCurrent()->Global(), 4, argv);
-
-								   break;
-	}
-	case T_ON_RQSETTLEMENTINFO:
-	{
-								  Local<Value> argv[4];
-								  pkg_cb_rqsettlementinfo(data, argv);
-								  cIt->second->Call(Context::GetCurrent()->Global(), 4, argv);
-								  break;
-	}
-	case T_ON_RSPERROR:
-	{
-						   Local<Value> argv[3];
-						   pkg_cb_rsperror(data, argv);
-						   cIt->second->Call(Context::GetCurrent()->Global(), 3, argv);
-
-						   break;
-	}
+		FunCallback_Switch(T_ON_DISCONNECTED, 1, ={ GETLOCAL(data->nReason) };)
+		FunCallback_Switch(T_ON_RSPUSERLOGIN, 4, ; pkg_cb_userlogin(data, argv);)
+		FunCallback_Switch(T_ON_RSPUSERLOGOUT, 3, ; pkg_cb_rsperror(data, argv);)
+		FunCallback_Switch(T_ON_RSPINFOCONFIRM, 4, ;pkg_cb_confirm(data, argv);)
+		FunCallback_Switch(T_ON_RSPINSERT, 4, ; pkg_cb_orderinsert(data, argv);)
+		FunCallback_Switch(T_ON_ERRINSERT, 2, ; pkg_cb_errorderinsert(data, argv);)
+		FunCallback_Switch(T_ON_RSPACTION, 4, ; pkg_cb_orderaction(data, argv);)
+		FunCallback_Switch(T_ON_ERRACTION, 2, ; pkg_cb_errorderaction(data, argv);)
+		FunCallback_Switch(T_ON_RQORDER, 4, ; pkg_cb_rspqryorder(data, argv);)
+		FunCallback_Switch(T_ON_RTNORDER, 1, ; pkg_cb_rsperror(data, argv);)
+		FunCallback_Switch(T_ON_RQTRADE, 4, ; pkg_cb_rqtrade(data, argv);)
+		FunCallback_Switch(T_ON_RTNTRADE, 1, ; pkg_cb_rtntrade(data, argv);)
+		FunCallback_Switch(T_ON_RQINVESTORPOSITION, 4, ; pkg_cb_rqinvestorposition(data, argv);)
+		FunCallback_Switch(T_ON_RQINVESTORPOSITIONDETAIL, 4, ; pkg_cb_rqinvestorpositiondetail(data, argv);)
+		FunCallback_Switch(T_ON_RQTRADINGACCOUNT,4, ; pkg_cb_rqtradingaccount(data, argv);)
+		FunCallback_Switch(T_ON_RQINSTRUMENT, 4, ; pkg_cb_rqinstrument(data, argv);)
+		FunCallback_Switch(T_ON_RQDEPTHMARKETDATA, 4, ; pkg_cb_rqdepthmarketdata(data, argv);)
+		FunCallback_Switch(T_ON_RQSETTLEMENTINFO, 4, ; pkg_cb_rqsettlementinfo(data, argv);)
+		FunCallback_Switch(T_ON_RSPERROR, 3, ; pkg_cb_rsperror(data, argv);)
 	}
 #undef FunCallback_Switch
 }
 
 void WrapTrader::FunRtnCallback(int result, void* baton) {
-	
+	CSCOPE
 	LookupCtpApiBaton* tmp = static_cast<LookupCtpApiBaton*>(baton);	 
 	if (tmp->uuid != -1) {
-		std::map<int, Persistent<Function> >::iterator it = fun_rtncb_map.find(tmp->uuid);
-		Local<Value> argv[2] = { Local<Value>::New(Int32::New(tmp->nResult)),Local<Value>::New(Int32::New(tmp->iRequestID)) };
-		it->second->Call(Context::GetCurrent()->Global(), 2, argv);
-		it->second.Dispose();
+		auto it = fun_rtncb_map.find(tmp->uuid);
+		Local<Value> argv[2] = { GETLOCAL(tmp->nResult),GETLOCAL(tmp->iRequestID) };
+		it->second.Get(isolate)->Call(isolate->GetCurrentContext()->Global(), 2, argv);
+		it->second.Reset();
 		fun_rtncb_map.erase(tmp->uuid);	  		
 	}
-	scope.Close(Undefined());
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void WrapTrader::pkg_cb_userlogin(CbRtnField* data, Local<Value>*cbArray) {
-	*cbArray = Int32::New(data->nRequestID);
-	*(cbArray + 1) = Boolean::New(data->bIsLast)->ToBoolean();
+	CSCOPE
+	*cbArray = GETLOCAL(data->nRequestID);
+	*(cbArray + 1) = GETLOCAL(data->bIsLast);
 	if (data->rtnField){  
 	    CThostFtdcRspUserLoginField* pRspUserLogin = static_cast<CThostFtdcRspUserLoginField*>(data->rtnField);
-		Local<Object> jsonRtn = Object::New();
-		jsonRtn->Set(GETLOCALSymbol("TradingDay"), GETLOCAL(pRspUserLogin->TradingDay));
-		jsonRtn->Set(GETLOCALSymbol("LoginTime"), GETLOCAL(pRspUserLogin->LoginTime));
-		jsonRtn->Set(GETLOCALSymbol("BrokerID"), GETLOCAL(pRspUserLogin->BrokerID));
-		jsonRtn->Set(GETLOCALSymbol("UserID"), GETLOCAL(pRspUserLogin->UserID));
-		jsonRtn->Set(GETLOCALSymbol("SystemName"), GETLOCAL(pRspUserLogin->SystemName));
-		jsonRtn->Set(GETLOCALSymbol("FrontID"), Int32::New(pRspUserLogin->FrontID));
-		jsonRtn->Set(GETLOCALSymbol("SessionID"), Int32::New(pRspUserLogin->SessionID));
-		jsonRtn->Set(GETLOCALSymbol("MaxOrderRef"), GETLOCAL(pRspUserLogin->MaxOrderRef));
-		jsonRtn->Set(GETLOCALSymbol("SHFETime"), GETLOCAL(pRspUserLogin->SHFETime));
-		jsonRtn->Set(GETLOCALSymbol("DCETime"), GETLOCAL(pRspUserLogin->DCETime));
-		jsonRtn->Set(GETLOCALSymbol("CZCETime"), GETLOCAL(pRspUserLogin->CZCETime));
-		jsonRtn->Set(GETLOCALSymbol("FFEXTime"), GETLOCAL(pRspUserLogin->FFEXTime));
-		jsonRtn->Set(GETLOCALSymbol("INETime"), GETLOCAL(pRspUserLogin->INETime));
+		Local<Object> jsonRtn = Object::New(isolate);
+#define jsonRtnSet(x) SetObjectProperty(jsonRtn, isolate, #x, pRspUserLogin->x);
+jsonRtnSet(TradingDay)
+jsonRtnSet(LoginTime)
+jsonRtnSet(BrokerID)
+jsonRtnSet(UserID)
+jsonRtnSet(SystemName)
+jsonRtnSet(FrontID)
+jsonRtnSet(SessionID)
+jsonRtnSet(MaxOrderRef)
+jsonRtnSet(SHFETime)
+jsonRtnSet(DCETime)
+jsonRtnSet(CZCETime)
+jsonRtnSet(FFEXTime)
+jsonRtnSet(INETime)
+#undef jsonRtnSet
 		*(cbArray + 2) = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Local<Value>::New(Undefined());
+		*(cbArray + 2) = Undefined(isolate);
 	}
 	
 	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
 	return;
 }
 void WrapTrader::pkg_cb_userlogout(CbRtnField* data, Local<Value>*cbArray) {
-	*cbArray = Int32::New(data->nRequestID);
-	*(cbArray + 1) = Boolean::New(data->bIsLast)->ToBoolean();
+	CSCOPE
+	*cbArray = GETLOCAL(data->nRequestID);
+	*(cbArray + 1) = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcRspUserLoginField* pRspUserLogin = static_cast<CThostFtdcRspUserLoginField*>(data->rtnField);
-		Local<Object> jsonRtn = Object::New();
-		jsonRtn->Set(GETLOCALSymbol("BrokerID"), GETLOCAL(pRspUserLogin->BrokerID));
-		jsonRtn->Set(GETLOCALSymbol("UserID"), GETLOCAL(pRspUserLogin->UserID));
+		Local<Object> jsonRtn = Object::New(isolate);
+#define jsonRtnSet(x) SetObjectProperty(jsonRtn, isolate, #x, pRspUserLogin->x);
+jsonRtnSet(BrokerID)
+jsonRtnSet(UserID)
+#undef jsonRtnSet
 		*(cbArray + 2) = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Local<Value>::New(Undefined());
+		*(cbArray + 2) = Undefined(isolate);
 	}
 	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
 	return;
 }
 void WrapTrader::pkg_cb_confirm(CbRtnField* data, Local<Value>*cbArray) {
-	*cbArray = Int32::New(data->nRequestID);
-	*(cbArray + 1) = Boolean::New(data->bIsLast)->ToBoolean();
+	CSCOPE
+	*cbArray = GETLOCAL(data->nRequestID);
+	*(cbArray + 1) = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcSettlementInfoConfirmField* pSettlementInfoConfirm = static_cast<CThostFtdcSettlementInfoConfirmField*>(data->rtnField);
-		Local<Object> jsonRtn = Object::New();
-		jsonRtn->Set(GETLOCALSymbol("BrokerID"), GETLOCAL(pSettlementInfoConfirm->BrokerID));
-		jsonRtn->Set(GETLOCALSymbol("InvestorID"), GETLOCAL(pSettlementInfoConfirm->InvestorID));
-		jsonRtn->Set(GETLOCALSymbol("ConfirmDate"), GETLOCAL(pSettlementInfoConfirm->ConfirmDate));
-		jsonRtn->Set(GETLOCALSymbol("ConfirmTime"), GETLOCAL(pSettlementInfoConfirm->ConfirmTime));
+		Local<Object> jsonRtn = Object::New(isolate);
+#define jsonRtnSet(x) SetObjectProperty(jsonRtn, isolate, #x, pSettlementInfoConfirm->x);
+jsonRtnSet(BrokerID)
+jsonRtnSet(InvestorID)
+jsonRtnSet(ConfirmDate)
+jsonRtnSet(ConfirmTime)
+#undef jsonRtnSet
 		*(cbArray + 2) = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Local<Value>::New(Undefined());
+		*(cbArray + 2) = Undefined(isolate);
 	}
 	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
 	return;
 }
 void WrapTrader::pkg_cb_orderinsert(CbRtnField* data, Local<Value>*cbArray) {
-	*cbArray = Int32::New(data->nRequestID);
-	*(cbArray + 1) = Boolean::New(data->bIsLast)->ToBoolean();
+	CSCOPE
+	*cbArray = GETLOCAL(data->nRequestID);
+	*(cbArray + 1) = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcInputOrderField* pInputOrder = static_cast<CThostFtdcInputOrderField*>(data->rtnField);
-		Local<Object> jsonRtn = Object::New();
-		jsonRtn->Set(GETLOCALSymbol("BrokerID"), GETLOCAL(pInputOrder->BrokerID));
-		jsonRtn->Set(GETLOCALSymbol("InvestorID"), GETLOCAL(pInputOrder->InvestorID));
-		jsonRtn->Set(GETLOCALSymbol("InstrumentID"), GETLOCAL(pInputOrder->InstrumentID));
-		jsonRtn->Set(GETLOCALSymbol("OrderRef"), GETLOCAL(pInputOrder->OrderRef));
-		jsonRtn->Set(GETLOCALSymbol("UserID"), GETLOCAL(pInputOrder->UserID));
-		jsonRtn->Set(GETLOCALSymbol("OrderPriceType"), GETLOCAL(charto_string(pInputOrder->OrderPriceType).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("Direction"), GETLOCAL(charto_string(pInputOrder->Direction).c_str()));  //var charval = String.fromCharCode(asciival);
-		jsonRtn->Set(GETLOCALSymbol("CombOffsetFlag"), GETLOCAL(pInputOrder->CombOffsetFlag));
-		jsonRtn->Set(GETLOCALSymbol("CombHedgeFlag"), GETLOCAL(pInputOrder->CombHedgeFlag));
-		jsonRtn->Set(GETLOCALSymbol("LimitPrice"), Number::New(pInputOrder->LimitPrice));
-		jsonRtn->Set(GETLOCALSymbol("VolumeTotalOriginal"), Int32::New(pInputOrder->VolumeTotalOriginal));
-		jsonRtn->Set(GETLOCALSymbol("TimeCondition"), GETLOCAL(charto_string(pInputOrder->TimeCondition).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("GTDDate"), GETLOCAL(pInputOrder->GTDDate));
-		jsonRtn->Set(GETLOCALSymbol("VolumeCondition"), GETLOCAL(charto_string(pInputOrder->VolumeCondition).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("MinVolume"), Int32::New(pInputOrder->MinVolume));
-		jsonRtn->Set(GETLOCALSymbol("ContingentCondition"), GETLOCAL(charto_string(pInputOrder->ContingentCondition).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("StopPrice"), Number::New(pInputOrder->StopPrice));
-		jsonRtn->Set(GETLOCALSymbol("ForceCloseReason"), GETLOCAL(charto_string(pInputOrder->ForceCloseReason).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("IsAutoSuspend"), Int32::New(pInputOrder->IsAutoSuspend));
-		jsonRtn->Set(GETLOCALSymbol("BusinessUnit"), GETLOCAL(pInputOrder->BusinessUnit));
-		jsonRtn->Set(GETLOCALSymbol("RequestID"), Int32::New(pInputOrder->RequestID));
-		jsonRtn->Set(GETLOCALSymbol("UserForceClose"), Int32::New(pInputOrder->UserForceClose));
-		jsonRtn->Set(GETLOCALSymbol("IsSwapOrder"), Int32::New(pInputOrder->IsSwapOrder));
+		Local<Object> jsonRtn = Object::New(isolate);
+#define jsonRtnSet(x) SetObjectProperty(jsonRtn, isolate, #x, pInputOrder->x);
+jsonRtnSet(BrokerID)
+jsonRtnSet(InvestorID)
+jsonRtnSet(InstrumentID)
+jsonRtnSet(OrderRef)
+jsonRtnSet(UserID)
+jsonRtnSet(OrderPriceType)
+jsonRtnSet(Direction)
+jsonRtnSet(CombOffsetFlag)
+jsonRtnSet(CombHedgeFlag)
+jsonRtnSet(LimitPrice)
+jsonRtnSet(VolumeTotalOriginal)
+jsonRtnSet(TimeCondition)
+jsonRtnSet(GTDDate)
+jsonRtnSet(VolumeCondition)
+jsonRtnSet(MinVolume)
+jsonRtnSet(ContingentCondition)
+jsonRtnSet(StopPrice)
+jsonRtnSet(ForceCloseReason)
+jsonRtnSet(IsAutoSuspend)
+jsonRtnSet(BusinessUnit)
+jsonRtnSet(RequestID)
+jsonRtnSet(UserForceClose)
+jsonRtnSet(IsSwapOrder)
+#undef jsonRtnSet
 		*(cbArray + 2) = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Local<Value>::New(Undefined());
+		*(cbArray + 2) = Undefined(isolate);
 	}
 	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
 	return;
 }
 void WrapTrader::pkg_cb_errorderinsert(CbRtnField* data, Local<Value>*cbArray) {
+	CSCOPE
     if (data->rtnField){ 
 	    CThostFtdcInputOrderField* pInputOrder = static_cast<CThostFtdcInputOrderField*>(data->rtnField);
-		Local<Object> jsonRtn = Object::New();
-		jsonRtn->Set(GETLOCALSymbol("BrokerID"), GETLOCAL(pInputOrder->BrokerID));
-		jsonRtn->Set(GETLOCALSymbol("InvestorID"), GETLOCAL(pInputOrder->InvestorID));
-		jsonRtn->Set(GETLOCALSymbol("InstrumentID"), GETLOCAL(pInputOrder->InstrumentID));
-		jsonRtn->Set(GETLOCALSymbol("OrderRef"), GETLOCAL(pInputOrder->OrderRef));
-		jsonRtn->Set(GETLOCALSymbol("UserID"), GETLOCAL(pInputOrder->UserID));
-		jsonRtn->Set(GETLOCALSymbol("OrderPriceType"), GETLOCAL(charto_string(pInputOrder->OrderPriceType).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("Direction"), GETLOCAL(charto_string(pInputOrder->Direction).c_str()));  //var charval = String.fromCharCode(asciival);
-		jsonRtn->Set(GETLOCALSymbol("CombOffsetFlag"), GETLOCAL(pInputOrder->CombOffsetFlag));
-		jsonRtn->Set(GETLOCALSymbol("CombHedgeFlag"), GETLOCAL(pInputOrder->CombHedgeFlag));
-		jsonRtn->Set(GETLOCALSymbol("LimitPrice"), Number::New(pInputOrder->LimitPrice));
-		jsonRtn->Set(GETLOCALSymbol("VolumeTotalOriginal"), Int32::New(pInputOrder->VolumeTotalOriginal));
-		jsonRtn->Set(GETLOCALSymbol("TimeCondition"), GETLOCAL(charto_string(pInputOrder->TimeCondition).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("GTDDate"), GETLOCAL(pInputOrder->GTDDate));
-		jsonRtn->Set(GETLOCALSymbol("VolumeCondition"), GETLOCAL(charto_string(pInputOrder->VolumeCondition).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("MinVolume"), Int32::New(pInputOrder->MinVolume));
-		jsonRtn->Set(GETLOCALSymbol("ContingentCondition"), GETLOCAL(charto_string(pInputOrder->ContingentCondition).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("StopPrice"), Number::New(pInputOrder->StopPrice));
-		jsonRtn->Set(GETLOCALSymbol("ForceCloseReason"), GETLOCAL(charto_string(pInputOrder->ForceCloseReason).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("IsAutoSuspend"), Int32::New(pInputOrder->IsAutoSuspend));
-		jsonRtn->Set(GETLOCALSymbol("BusinessUnit"), GETLOCAL(pInputOrder->BusinessUnit));
-		jsonRtn->Set(GETLOCALSymbol("RequestID"), Int32::New(pInputOrder->RequestID));
-		jsonRtn->Set(GETLOCALSymbol("UserForceClose"), Int32::New(pInputOrder->UserForceClose));
-		jsonRtn->Set(GETLOCALSymbol("IsSwapOrder"), Int32::New(pInputOrder->IsSwapOrder));
+		Local<Object> jsonRtn = Object::New(isolate);
+#define jsonRtnSet(x) SetObjectProperty(jsonRtn, isolate, #x, pInputOrder->x);
+jsonRtnSet(BrokerID)
+jsonRtnSet(InvestorID)
+jsonRtnSet(InstrumentID)
+jsonRtnSet(OrderRef)
+jsonRtnSet(UserID)
+jsonRtnSet(OrderPriceType)
+jsonRtnSet(Direction)
+jsonRtnSet(CombOffsetFlag)
+jsonRtnSet(CombHedgeFlag)
+jsonRtnSet(LimitPrice)
+jsonRtnSet(VolumeTotalOriginal)
+jsonRtnSet(TimeCondition)
+jsonRtnSet(GTDDate)
+jsonRtnSet(VolumeCondition)
+jsonRtnSet(MinVolume)
+jsonRtnSet(ContingentCondition)
+jsonRtnSet(StopPrice)
+jsonRtnSet(ForceCloseReason)
+jsonRtnSet(IsAutoSuspend)
+jsonRtnSet(BusinessUnit)
+jsonRtnSet(RequestID)
+jsonRtnSet(UserForceClose)
+jsonRtnSet(IsSwapOrder)
+#undef jsonRtnSet
 		*cbArray = jsonRtn;
 	}
 	else {
-		*cbArray = Local<Value>::New(Undefined());
+		*cbArray = Undefined(isolate);
 	}
 	*(cbArray + 1) = pkg_rspinfo(data->rspInfo);
 	return;
 }
 void WrapTrader::pkg_cb_orderaction(CbRtnField* data, Local<Value>*cbArray) {
-	*cbArray = Int32::New(data->nRequestID);
-	*(cbArray + 1) = Boolean::New(data->bIsLast)->ToBoolean();
+	CSCOPE
+	*cbArray = GETLOCAL(data->nRequestID);
+	*(cbArray + 1) = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcInputOrderActionField* pInputOrderAction = static_cast<CThostFtdcInputOrderActionField*>(data->rtnField);
-		Local<Object> jsonRtn = Object::New();
-		jsonRtn->Set(GETLOCALSymbol("BrokerID"), GETLOCAL(pInputOrderAction->BrokerID));
-		jsonRtn->Set(GETLOCALSymbol("InvestorID"), GETLOCAL(pInputOrderAction->InvestorID));
-		jsonRtn->Set(GETLOCALSymbol("OrderActionRef"), Int32::New(pInputOrderAction->OrderActionRef));
-		jsonRtn->Set(GETLOCALSymbol("OrderRef"), GETLOCAL(pInputOrderAction->OrderRef));
-		jsonRtn->Set(GETLOCALSymbol("RequestID"), Int32::New(pInputOrderAction->RequestID));
-		jsonRtn->Set(GETLOCALSymbol("FrontID"), Int32::New(pInputOrderAction->FrontID));
-		jsonRtn->Set(GETLOCALSymbol("SessionID"), Int32::New(pInputOrderAction->SessionID));
-		jsonRtn->Set(GETLOCALSymbol("ExchangeID"), GETLOCAL(pInputOrderAction->ExchangeID));
-		jsonRtn->Set(GETLOCALSymbol("OrderSysID"), GETLOCAL(pInputOrderAction->OrderSysID));
-		jsonRtn->Set(GETLOCALSymbol("ActionFlag"), GETLOCAL(charto_string(pInputOrderAction->ActionFlag).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("LimitPrice"), Number::New(pInputOrderAction->LimitPrice));
-		jsonRtn->Set(GETLOCALSymbol("VolumeChange"), Int32::New(pInputOrderAction->VolumeChange));
-		jsonRtn->Set(GETLOCALSymbol("UserID"), GETLOCAL(pInputOrderAction->UserID));
-		jsonRtn->Set(GETLOCALSymbol("InstrumentID"), GETLOCAL(pInputOrderAction->InstrumentID));
+		Local<Object> jsonRtn = Object::New(isolate);
+#define jsonRtnSet(x) SetObjectProperty(jsonRtn, isolate, #x, pInputOrderAction->x);
+jsonRtnSet(BrokerID)
+jsonRtnSet(InvestorID)
+jsonRtnSet(OrderActionRef)
+jsonRtnSet(OrderRef)
+jsonRtnSet(RequestID)
+jsonRtnSet(FrontID)
+jsonRtnSet(SessionID)
+jsonRtnSet(ExchangeID)
+jsonRtnSet(OrderSysID)
+jsonRtnSet(ActionFlag)
+jsonRtnSet(LimitPrice)
+jsonRtnSet(VolumeChange)
+jsonRtnSet(UserID)
+jsonRtnSet(InstrumentID)
+#undef jsonRtnSet
 		*(cbArray + 2) = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Local<Value>::New(Undefined());
+		*(cbArray + 2) = Undefined(isolate);
 	}
 	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
 	return;
 }
 void WrapTrader::pkg_cb_errorderaction(CbRtnField* data, Local<Value>*cbArray) {
+	CSCOPE
     if (data->rtnField){ 
 	    CThostFtdcOrderActionField* pOrderAction = static_cast<CThostFtdcOrderActionField*>(data->rtnField);
-		Local<Object> jsonRtn = Object::New();
-		jsonRtn->Set(GETLOCALSymbol("BrokerID"), GETLOCAL(pOrderAction->BrokerID));
-		jsonRtn->Set(GETLOCALSymbol("InvestorID"), GETLOCAL(pOrderAction->InvestorID));
-		jsonRtn->Set(GETLOCALSymbol("OrderActionRef"), Int32::New(pOrderAction->OrderActionRef));
-		jsonRtn->Set(GETLOCALSymbol("OrderRef"), GETLOCAL(pOrderAction->OrderRef));
-		jsonRtn->Set(GETLOCALSymbol("RequestID"), Int32::New(pOrderAction->RequestID));
-		jsonRtn->Set(GETLOCALSymbol("FrontID"), Int32::New(pOrderAction->FrontID));
-		jsonRtn->Set(GETLOCALSymbol("SessionID"), Int32::New(pOrderAction->SessionID));
-		jsonRtn->Set(GETLOCALSymbol("ExchangeID"), GETLOCAL(pOrderAction->ExchangeID));
-		jsonRtn->Set(GETLOCALSymbol("OrderSysID"), GETLOCAL(pOrderAction->OrderSysID));
-		jsonRtn->Set(GETLOCALSymbol("ActionFlag"), GETLOCAL(charto_string(pOrderAction->ActionFlag).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("LimitPrice"), Number::New(pOrderAction->LimitPrice));
-		jsonRtn->Set(GETLOCALSymbol("VolumeChange"), Int32::New(pOrderAction->VolumeChange));
-		jsonRtn->Set(GETLOCALSymbol("ActionDate"), GETLOCAL(pOrderAction->ActionDate));
-		jsonRtn->Set(GETLOCALSymbol("TraderID"), GETLOCAL(pOrderAction->TraderID));
-		jsonRtn->Set(GETLOCALSymbol("InstallID"), Int32::New(pOrderAction->InstallID));
-		jsonRtn->Set(GETLOCALSymbol("OrderLocalID"), GETLOCAL(pOrderAction->OrderLocalID));
-		jsonRtn->Set(GETLOCALSymbol("ActionLocalID"), GETLOCAL(pOrderAction->ActionLocalID));
-		jsonRtn->Set(GETLOCALSymbol("ParticipantID"), GETLOCAL(pOrderAction->ParticipantID));
-		jsonRtn->Set(GETLOCALSymbol("ClientID"), GETLOCAL(pOrderAction->ClientID));
-		jsonRtn->Set(GETLOCALSymbol("BusinessUnit"), GETLOCAL(pOrderAction->BusinessUnit));
-		jsonRtn->Set(GETLOCALSymbol("OrderActionStatus"), GETLOCAL(charto_string(pOrderAction->OrderActionStatus).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("UserID"), GETLOCAL(pOrderAction->UserID));
-		jsonRtn->Set(GETLOCALSymbol("StatusMsg"), GETLOCAL(pOrderAction->StatusMsg));
-		jsonRtn->Set(GETLOCALSymbol("InstrumentID"), GETLOCAL(pOrderAction->InstrumentID));
+		Local<Object> jsonRtn = Object::New(isolate);
+#define jsonRtnSet(x) SetObjectProperty(jsonRtn, isolate, #x, pOrderAction->x);
+jsonRtnSet(BrokerID)
+jsonRtnSet(InvestorID)
+jsonRtnSet(OrderActionRef)
+jsonRtnSet(OrderRef)
+jsonRtnSet(RequestID)
+jsonRtnSet(FrontID)
+jsonRtnSet(SessionID)
+jsonRtnSet(ExchangeID)
+jsonRtnSet(OrderSysID)
+jsonRtnSet(ActionFlag)
+jsonRtnSet(LimitPrice)
+jsonRtnSet(VolumeChange)
+jsonRtnSet(ActionDate)
+jsonRtnSet(TraderID)
+jsonRtnSet(InstallID)
+jsonRtnSet(OrderLocalID)
+jsonRtnSet(ActionLocalID)
+jsonRtnSet(ParticipantID)
+jsonRtnSet(ClientID)
+jsonRtnSet(BusinessUnit)
+jsonRtnSet(OrderActionStatus)
+jsonRtnSet(UserID)
+jsonRtnSet(StatusMsg)
+jsonRtnSet(InstrumentID)
+#undef jsonRtnSet
 		*cbArray = jsonRtn;
 	}
 	else {
-		*cbArray = Local<Value>::New(Undefined());
+		*cbArray = Undefined(isolate);
 	}
 	*(cbArray + 1) = pkg_rspinfo(data->rspInfo);
 	return;
 }
 void WrapTrader::pkg_cb_rspqryorder(CbRtnField* data, Local<Value>*cbArray) {
-	*cbArray = Int32::New(data->nRequestID);
-	*(cbArray + 1) = Boolean::New(data->bIsLast)->ToBoolean();
+	CSCOPE
+	*cbArray = GETLOCAL(data->nRequestID);
+	*(cbArray + 1) = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcOrderField* pOrder = static_cast<CThostFtdcOrderField*>(data->rtnField);
-		Local<Object> jsonRtn = Object::New();
-		jsonRtn->Set(GETLOCALSymbol("BrokerID"), GETLOCAL(pOrder->BrokerID));
-		jsonRtn->Set(GETLOCALSymbol("InvestorID"), GETLOCAL(pOrder->InvestorID));
-		jsonRtn->Set(GETLOCALSymbol("InstrumentID"), GETLOCAL(pOrder->InstrumentID));
-		jsonRtn->Set(GETLOCALSymbol("OrderRef"), GETLOCAL(pOrder->OrderRef));
-		jsonRtn->Set(GETLOCALSymbol("UserID"), GETLOCAL(pOrder->UserID));
-		jsonRtn->Set(GETLOCALSymbol("OrderPriceType"), GETLOCAL(charto_string(pOrder->OrderPriceType).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("Direction"), GETLOCAL(charto_string(pOrder->Direction).c_str()));  //var charval = String.fromCharCode(asciival);
-		jsonRtn->Set(GETLOCALSymbol("CombOffsetFlag"), GETLOCAL(pOrder->CombOffsetFlag));
-		jsonRtn->Set(GETLOCALSymbol("CombHedgeFlag"), GETLOCAL(pOrder->CombHedgeFlag));
-		jsonRtn->Set(GETLOCALSymbol("LimitPrice"), Number::New(pOrder->LimitPrice));
-		jsonRtn->Set(GETLOCALSymbol("VolumeTotalOriginal"), Int32::New(pOrder->VolumeTotalOriginal));
-		jsonRtn->Set(GETLOCALSymbol("TimeCondition"), GETLOCAL(charto_string(pOrder->TimeCondition).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("GTDDate"), GETLOCAL(pOrder->GTDDate));
-		jsonRtn->Set(GETLOCALSymbol("VolumeCondition"), GETLOCAL(charto_string(pOrder->VolumeCondition).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("MinVolume"), Int32::New(pOrder->MinVolume));
-		jsonRtn->Set(GETLOCALSymbol("ContingentCondition"), GETLOCAL(charto_string(pOrder->ContingentCondition).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("StopPrice"), Number::New(pOrder->StopPrice));
-		jsonRtn->Set(GETLOCALSymbol("ForceCloseReason"), GETLOCAL(charto_string(pOrder->ForceCloseReason).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("IsAutoSuspend"), Int32::New(pOrder->IsAutoSuspend));
-		jsonRtn->Set(GETLOCALSymbol("BusinessUnit"), GETLOCAL(pOrder->BusinessUnit));
-		jsonRtn->Set(GETLOCALSymbol("RequestID"), Int32::New(pOrder->RequestID));
-		jsonRtn->Set(GETLOCALSymbol("OrderLocalID"), GETLOCAL(pOrder->OrderLocalID));
-		jsonRtn->Set(GETLOCALSymbol("ExchangeID"), GETLOCAL(pOrder->ExchangeID));
-		jsonRtn->Set(GETLOCALSymbol("ParticipantID"), GETLOCAL(pOrder->ParticipantID));
-		jsonRtn->Set(GETLOCALSymbol("ClientID"), GETLOCAL(pOrder->ClientID));
-		jsonRtn->Set(GETLOCALSymbol("ExchangeInstID"), GETLOCAL(pOrder->ExchangeInstID));
-		jsonRtn->Set(GETLOCALSymbol("TraderID"), GETLOCAL(pOrder->TraderID));
-		jsonRtn->Set(GETLOCALSymbol("InstallID"), Int32::New(pOrder->InstallID));
-		jsonRtn->Set(GETLOCALSymbol("OrderSubmitStatus"), GETLOCAL(charto_string(pOrder->OrderSubmitStatus).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("NotifySequence"), Int32::New(pOrder->NotifySequence));
-		jsonRtn->Set(GETLOCALSymbol("TradingDay"), GETLOCAL(pOrder->TradingDay));
-		jsonRtn->Set(GETLOCALSymbol("SettlementID"), Int32::New(pOrder->SettlementID));
-		jsonRtn->Set(GETLOCALSymbol("OrderSysID"), GETLOCAL(pOrder->OrderSysID));
-		jsonRtn->Set(GETLOCALSymbol("OrderSource"), Int32::New(pOrder->OrderSource));
-		jsonRtn->Set(GETLOCALSymbol("OrderStatus"), GETLOCAL(charto_string(pOrder->OrderStatus).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("OrderType"), GETLOCAL(charto_string(pOrder->OrderType).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("VolumeTraded"), Int32::New(pOrder->VolumeTraded));
-		jsonRtn->Set(GETLOCALSymbol("VolumeTotal"), Int32::New(pOrder->VolumeTotal));
-		jsonRtn->Set(GETLOCALSymbol("InsertDate"), GETLOCAL(pOrder->InsertDate));
-		jsonRtn->Set(GETLOCALSymbol("InsertTime"), GETLOCAL(pOrder->InsertTime));
-		jsonRtn->Set(GETLOCALSymbol("ActiveTime"), GETLOCAL(pOrder->ActiveTime));
-		jsonRtn->Set(GETLOCALSymbol("SuspendTime"), GETLOCAL(pOrder->SuspendTime));
-		jsonRtn->Set(GETLOCALSymbol("UpdateTime"), GETLOCAL(pOrder->UpdateTime));
-		jsonRtn->Set(GETLOCALSymbol("CancelTime"), GETLOCAL(pOrder->CancelTime));
-		jsonRtn->Set(GETLOCALSymbol("ActiveTraderID"), GETLOCAL(pOrder->ActiveTraderID));
-		jsonRtn->Set(GETLOCALSymbol("ClearingPartID"), GETLOCAL(pOrder->ClearingPartID));
-		jsonRtn->Set(GETLOCALSymbol("SequenceNo"), Int32::New(pOrder->SequenceNo));
-		jsonRtn->Set(GETLOCALSymbol("FrontID"), Int32::New(pOrder->FrontID));
-		jsonRtn->Set(GETLOCALSymbol("SessionID"), Int32::New(pOrder->SessionID));
-		jsonRtn->Set(GETLOCALSymbol("UserProductInfo"), GETLOCAL(pOrder->UserProductInfo));
-		jsonRtn->Set(GETLOCALSymbol("StatusMsg"), GETLOCAL(pOrder->StatusMsg));
-		jsonRtn->Set(GETLOCALSymbol("UserForceClose"), Int32::New(pOrder->UserForceClose));
-		jsonRtn->Set(GETLOCALSymbol("ActiveUserID"), GETLOCAL(pOrder->ActiveUserID));
-		jsonRtn->Set(GETLOCALSymbol("BrokerOrderSeq"), Int32::New(pOrder->BrokerOrderSeq));
-		jsonRtn->Set(GETLOCALSymbol("RelativeOrderSysID"), GETLOCAL(pOrder->RelativeOrderSysID));
-		jsonRtn->Set(GETLOCALSymbol("ZCETotalTradedVolume"), Int32::New(pOrder->ZCETotalTradedVolume));
-		jsonRtn->Set(GETLOCALSymbol("IsSwapOrder"), Int32::New(pOrder->IsSwapOrder));
+		Local<Object> jsonRtn = Object::New(isolate);
+#define jsonRtnSet(x) SetObjectProperty(jsonRtn, isolate, #x, pOrder->x);
+jsonRtnSet(BrokerID)
+jsonRtnSet(InvestorID)
+jsonRtnSet(InstrumentID)
+jsonRtnSet(OrderRef)
+jsonRtnSet(UserID)
+jsonRtnSet(OrderPriceType)
+jsonRtnSet(Direction)
+jsonRtnSet(CombOffsetFlag)
+jsonRtnSet(CombHedgeFlag)
+jsonRtnSet(LimitPrice)
+jsonRtnSet(VolumeTotalOriginal)
+jsonRtnSet(TimeCondition)
+jsonRtnSet(GTDDate)
+jsonRtnSet(VolumeCondition)
+jsonRtnSet(MinVolume)
+jsonRtnSet(ContingentCondition)
+jsonRtnSet(StopPrice)
+jsonRtnSet(ForceCloseReason)
+jsonRtnSet(IsAutoSuspend)
+jsonRtnSet(BusinessUnit)
+jsonRtnSet(RequestID)
+jsonRtnSet(OrderLocalID)
+jsonRtnSet(ExchangeID)
+jsonRtnSet(ParticipantID)
+jsonRtnSet(ClientID)
+jsonRtnSet(ExchangeInstID)
+jsonRtnSet(TraderID)
+jsonRtnSet(InstallID)
+jsonRtnSet(OrderSubmitStatus)
+jsonRtnSet(NotifySequence)
+jsonRtnSet(TradingDay)
+jsonRtnSet(SettlementID)
+jsonRtnSet(OrderSysID)
+jsonRtnSet(OrderSource)
+jsonRtnSet(OrderStatus)
+jsonRtnSet(OrderType)
+jsonRtnSet(VolumeTraded)
+jsonRtnSet(VolumeTotal)
+jsonRtnSet(InsertDate)
+jsonRtnSet(InsertTime)
+jsonRtnSet(ActiveTime)
+jsonRtnSet(SuspendTime)
+jsonRtnSet(UpdateTime)
+jsonRtnSet(CancelTime)
+jsonRtnSet(ActiveTraderID)
+jsonRtnSet(ClearingPartID)
+jsonRtnSet(SequenceNo)
+jsonRtnSet(FrontID)
+jsonRtnSet(SessionID)
+jsonRtnSet(UserProductInfo)
+jsonRtnSet(StatusMsg)
+jsonRtnSet(UserForceClose)
+jsonRtnSet(ActiveUserID)
+jsonRtnSet(BrokerOrderSeq)
+jsonRtnSet(RelativeOrderSysID)
+jsonRtnSet(ZCETotalTradedVolume)
+jsonRtnSet(IsSwapOrder)
+#undef jsonRtnSet
 		*(cbArray + 2) = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Local<Value>::New(Undefined());
+		*(cbArray + 2) = Undefined(isolate);
 	}
 	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
 	return;
 }
 void WrapTrader::pkg_cb_rtnorder(CbRtnField* data, Local<Value>*cbArray) {
+	CSCOPE
     if (data->rtnField){ 
 	    CThostFtdcOrderField* pOrder = static_cast<CThostFtdcOrderField*>(data->rtnField);
-		Local<Object> jsonRtn = Object::New();
-		jsonRtn->Set(GETLOCALSymbol("BrokerID"), GETLOCAL(pOrder->BrokerID));
-		jsonRtn->Set(GETLOCALSymbol("InvestorID"), GETLOCAL(pOrder->InvestorID));
-		jsonRtn->Set(GETLOCALSymbol("InstrumentID"), GETLOCAL(pOrder->InstrumentID));
-		jsonRtn->Set(GETLOCALSymbol("OrderRef"), GETLOCAL(pOrder->OrderRef));
-		jsonRtn->Set(GETLOCALSymbol("UserID"), GETLOCAL(pOrder->UserID));
-		jsonRtn->Set(GETLOCALSymbol("OrderPriceType"), GETLOCAL(charto_string(pOrder->OrderPriceType).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("Direction"), GETLOCAL(charto_string(pOrder->Direction).c_str()));  //var charval = String.fromCharCode(asciival);
-		jsonRtn->Set(GETLOCALSymbol("CombOffsetFlag"), GETLOCAL(pOrder->CombOffsetFlag));
-		jsonRtn->Set(GETLOCALSymbol("CombHedgeFlag"), GETLOCAL(pOrder->CombHedgeFlag));
-		jsonRtn->Set(GETLOCALSymbol("LimitPrice"), Number::New(pOrder->LimitPrice));
-		jsonRtn->Set(GETLOCALSymbol("VolumeTotalOriginal"), Int32::New(pOrder->VolumeTotalOriginal));
-		jsonRtn->Set(GETLOCALSymbol("TimeCondition"), GETLOCAL(charto_string(pOrder->TimeCondition).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("GTDDate"), GETLOCAL(pOrder->GTDDate));
-		jsonRtn->Set(GETLOCALSymbol("VolumeCondition"), GETLOCAL(charto_string(pOrder->VolumeCondition).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("MinVolume"), Int32::New(pOrder->MinVolume));
-		jsonRtn->Set(GETLOCALSymbol("ContingentCondition"), GETLOCAL(charto_string(pOrder->ContingentCondition).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("StopPrice"), Number::New(pOrder->StopPrice));
-		jsonRtn->Set(GETLOCALSymbol("ForceCloseReason"), GETLOCAL(charto_string(pOrder->ForceCloseReason).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("IsAutoSuspend"), Int32::New(pOrder->IsAutoSuspend));
-		jsonRtn->Set(GETLOCALSymbol("BusinessUnit"), GETLOCAL(pOrder->BusinessUnit));
-		jsonRtn->Set(GETLOCALSymbol("RequestID"), Int32::New(pOrder->RequestID));
-		jsonRtn->Set(GETLOCALSymbol("OrderLocalID"), GETLOCAL(pOrder->OrderLocalID));
-		jsonRtn->Set(GETLOCALSymbol("ExchangeID"), GETLOCAL(pOrder->ExchangeID));
-		jsonRtn->Set(GETLOCALSymbol("ParticipantID"), GETLOCAL(pOrder->ParticipantID));
-		jsonRtn->Set(GETLOCALSymbol("ClientID"), GETLOCAL(pOrder->ClientID));
-		jsonRtn->Set(GETLOCALSymbol("ExchangeInstID"), GETLOCAL(pOrder->ExchangeInstID));
-		jsonRtn->Set(GETLOCALSymbol("TraderID"), GETLOCAL(pOrder->TraderID));
-		jsonRtn->Set(GETLOCALSymbol("InstallID"), Int32::New(pOrder->InstallID));
-		jsonRtn->Set(GETLOCALSymbol("OrderSubmitStatus"), GETLOCAL(charto_string(pOrder->OrderSubmitStatus).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("NotifySequence"), Int32::New(pOrder->NotifySequence));
-		jsonRtn->Set(GETLOCALSymbol("TradingDay"), GETLOCAL(pOrder->TradingDay));
-		jsonRtn->Set(GETLOCALSymbol("SettlementID"), Int32::New(pOrder->SettlementID));
-		jsonRtn->Set(GETLOCALSymbol("OrderSysID"), GETLOCAL(pOrder->OrderSysID));
-		jsonRtn->Set(GETLOCALSymbol("OrderSource"), Int32::New(pOrder->OrderSource));
-		jsonRtn->Set(GETLOCALSymbol("OrderStatus"), GETLOCAL(charto_string(pOrder->OrderStatus).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("OrderType"), GETLOCAL(charto_string(pOrder->OrderType).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("VolumeTraded"), Int32::New(pOrder->VolumeTraded));
-		jsonRtn->Set(GETLOCALSymbol("VolumeTotal"), Int32::New(pOrder->VolumeTotal));
-		jsonRtn->Set(GETLOCALSymbol("InsertDate"), GETLOCAL(pOrder->InsertDate));
-		jsonRtn->Set(GETLOCALSymbol("InsertTime"), GETLOCAL(pOrder->InsertTime));
-		jsonRtn->Set(GETLOCALSymbol("ActiveTime"), GETLOCAL(pOrder->ActiveTime));
-		jsonRtn->Set(GETLOCALSymbol("SuspendTime"), GETLOCAL(pOrder->SuspendTime));
-		jsonRtn->Set(GETLOCALSymbol("UpdateTime"), GETLOCAL(pOrder->UpdateTime));
-		jsonRtn->Set(GETLOCALSymbol("CancelTime"), GETLOCAL(pOrder->CancelTime));
-		jsonRtn->Set(GETLOCALSymbol("ActiveTraderID"), GETLOCAL(pOrder->ActiveTraderID));
-		jsonRtn->Set(GETLOCALSymbol("ClearingPartID"), GETLOCAL(pOrder->ClearingPartID));
-		jsonRtn->Set(GETLOCALSymbol("SequenceNo"), Int32::New(pOrder->SequenceNo));
-		jsonRtn->Set(GETLOCALSymbol("FrontID"), Int32::New(pOrder->FrontID));
-		jsonRtn->Set(GETLOCALSymbol("SessionID"), Int32::New(pOrder->SessionID));
-		jsonRtn->Set(GETLOCALSymbol("UserProductInfo"), GETLOCAL(pOrder->UserProductInfo));
-		jsonRtn->Set(GETLOCALSymbol("StatusMsg"), GETLOCAL(pOrder->StatusMsg));
-		jsonRtn->Set(GETLOCALSymbol("UserForceClose"), Int32::New(pOrder->UserForceClose));
-		jsonRtn->Set(GETLOCALSymbol("ActiveUserID"), GETLOCAL(pOrder->ActiveUserID));
-		jsonRtn->Set(GETLOCALSymbol("BrokerOrderSeq"), Int32::New(pOrder->BrokerOrderSeq));
-		jsonRtn->Set(GETLOCALSymbol("RelativeOrderSysID"), GETLOCAL(pOrder->RelativeOrderSysID));
-		jsonRtn->Set(GETLOCALSymbol("ZCETotalTradedVolume"), Int32::New(pOrder->ZCETotalTradedVolume));
-		jsonRtn->Set(GETLOCALSymbol("IsSwapOrder"), Int32::New(pOrder->IsSwapOrder));
+		Local<Object> jsonRtn = Object::New(isolate);
+#define jsonRtnSet(x) SetObjectProperty(jsonRtn, isolate, #x, pOrder->x);
+jsonRtnSet(BrokerID)
+jsonRtnSet(InvestorID)
+jsonRtnSet(InstrumentID)
+jsonRtnSet(OrderRef)
+jsonRtnSet(UserID)
+jsonRtnSet(OrderPriceType)
+jsonRtnSet(Direction)
+jsonRtnSet(CombOffsetFlag)
+jsonRtnSet(CombHedgeFlag)
+jsonRtnSet(LimitPrice)
+jsonRtnSet(VolumeTotalOriginal)
+jsonRtnSet(TimeCondition)
+jsonRtnSet(GTDDate)
+jsonRtnSet(VolumeCondition)
+jsonRtnSet(MinVolume)
+jsonRtnSet(ContingentCondition)
+jsonRtnSet(StopPrice)
+jsonRtnSet(ForceCloseReason)
+jsonRtnSet(IsAutoSuspend)
+jsonRtnSet(BusinessUnit)
+jsonRtnSet(RequestID)
+jsonRtnSet(OrderLocalID)
+jsonRtnSet(ExchangeID)
+jsonRtnSet(ParticipantID)
+jsonRtnSet(ClientID)
+jsonRtnSet(ExchangeInstID)
+jsonRtnSet(TraderID)
+jsonRtnSet(InstallID)
+jsonRtnSet(OrderSubmitStatus)
+jsonRtnSet(NotifySequence)
+jsonRtnSet(TradingDay)
+jsonRtnSet(SettlementID)
+jsonRtnSet(OrderSysID)
+jsonRtnSet(OrderSource)
+jsonRtnSet(OrderStatus)
+jsonRtnSet(OrderType)
+jsonRtnSet(VolumeTraded)
+jsonRtnSet(VolumeTotal)
+jsonRtnSet(InsertDate)
+jsonRtnSet(InsertTime)
+jsonRtnSet(ActiveTime)
+jsonRtnSet(SuspendTime)
+jsonRtnSet(UpdateTime)
+jsonRtnSet(CancelTime)
+jsonRtnSet(ActiveTraderID)
+jsonRtnSet(ClearingPartID)
+jsonRtnSet(SequenceNo)
+jsonRtnSet(FrontID)
+jsonRtnSet(SessionID)
+jsonRtnSet(UserProductInfo)
+jsonRtnSet(StatusMsg)
+jsonRtnSet(UserForceClose)
+jsonRtnSet(ActiveUserID)
+jsonRtnSet(BrokerOrderSeq)
+jsonRtnSet(RelativeOrderSysID)
+jsonRtnSet(ZCETotalTradedVolume)
+jsonRtnSet(IsSwapOrder)
+#undef jsonRtnSet
 		*cbArray = jsonRtn;
 	}
 	else {
-		*cbArray = Local<Value>::New(Undefined());
+		*cbArray = Undefined(isolate);
 	}
 	return;
 }
 void WrapTrader::pkg_cb_rqtrade(CbRtnField* data, Local<Value>*cbArray) {
-	*cbArray = Int32::New(data->nRequestID);
-	*(cbArray + 1) = Boolean::New(data->bIsLast)->ToBoolean();
+	CSCOPE
+	*cbArray = GETLOCAL(data->nRequestID);
+	*(cbArray + 1) = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcTradeField* pTrade = static_cast<CThostFtdcTradeField*>(data->rtnField);
-		Local<Object> jsonRtn = Object::New();
-		jsonRtn->Set(GETLOCALSymbol("BrokerID"), GETLOCAL(pTrade->BrokerID));
-		jsonRtn->Set(GETLOCALSymbol("InvestorID"), GETLOCAL(pTrade->InvestorID));
-		jsonRtn->Set(GETLOCALSymbol("InstrumentID"), GETLOCAL(pTrade->InstrumentID));
-		jsonRtn->Set(GETLOCALSymbol("OrderRef"), GETLOCAL(pTrade->OrderRef));
-		jsonRtn->Set(GETLOCALSymbol("UserID"), GETLOCAL(pTrade->UserID));
-		jsonRtn->Set(GETLOCALSymbol("ExchangeID"), GETLOCAL(pTrade->ExchangeID));
-		jsonRtn->Set(GETLOCALSymbol("TradeID"), GETLOCAL(pTrade->TradeID));
-		jsonRtn->Set(GETLOCALSymbol("Direction"), GETLOCAL(charto_string(pTrade->Direction).c_str()));  //var charval = String.fromCharCode(asciival);
-		jsonRtn->Set(GETLOCALSymbol("OrderSysID"), GETLOCAL(pTrade->OrderSysID));
-		jsonRtn->Set(GETLOCALSymbol("ParticipantID"), GETLOCAL(pTrade->ParticipantID));
-		jsonRtn->Set(GETLOCALSymbol("ClientID"), GETLOCAL(pTrade->ClientID));
-		jsonRtn->Set(GETLOCALSymbol("TradingRole"), GETLOCAL(charto_string(pTrade->TradingRole).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("ExchangeInstID"), GETLOCAL(pTrade->ExchangeInstID));
-		jsonRtn->Set(GETLOCALSymbol("OffsetFlag"), GETLOCAL(charto_string(pTrade->OffsetFlag).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("HedgeFlag"), GETLOCAL(charto_string(pTrade->HedgeFlag).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("Price"), Number::New(pTrade->Price));
-		jsonRtn->Set(GETLOCALSymbol("Volume"), Int32::New(pTrade->Volume));
-		jsonRtn->Set(GETLOCALSymbol("TradeDate"), GETLOCAL(pTrade->TradeDate));
-		jsonRtn->Set(GETLOCALSymbol("TradeTime"), GETLOCAL(pTrade->TradeTime));
-		jsonRtn->Set(GETLOCALSymbol("TradeType"), GETLOCAL(charto_string(pTrade->TradeType).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("PriceSource"), GETLOCAL(charto_string(pTrade->PriceSource).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("TraderID"), GETLOCAL(pTrade->TraderID));
-		jsonRtn->Set(GETLOCALSymbol("OrderLocalID"), GETLOCAL(pTrade->OrderLocalID));
-		jsonRtn->Set(GETLOCALSymbol("ClearingPartID"), GETLOCAL(pTrade->ClearingPartID));
-		jsonRtn->Set(GETLOCALSymbol("BusinessUnit"), GETLOCAL(pTrade->BusinessUnit));
-		jsonRtn->Set(GETLOCALSymbol("SequenceNo"), Int32::New(pTrade->SequenceNo));
-		jsonRtn->Set(GETLOCALSymbol("TradingDay"), GETLOCAL(pTrade->TradingDay));
-		jsonRtn->Set(GETLOCALSymbol("SettlementID"), Int32::New(pTrade->SettlementID));
-		jsonRtn->Set(GETLOCALSymbol("BrokerOrderSeq"), Int32::New(pTrade->BrokerOrderSeq));
-		jsonRtn->Set(GETLOCALSymbol("TradeSource"), GETLOCAL(charto_string(pTrade->TradeSource).c_str()));
+		Local<Object> jsonRtn = Object::New(isolate);
+#define jsonRtnSet(x) SetObjectProperty(jsonRtn, isolate, #x, pTrade->x);
+jsonRtnSet(BrokerID)
+jsonRtnSet(InvestorID)
+jsonRtnSet(InstrumentID)
+jsonRtnSet(OrderRef)
+jsonRtnSet(UserID)
+jsonRtnSet(ExchangeID)
+jsonRtnSet(TradeID)
+jsonRtnSet(Direction)
+jsonRtnSet(OrderSysID)
+jsonRtnSet(ParticipantID)
+jsonRtnSet(ClientID)
+jsonRtnSet(TradingRole)
+jsonRtnSet(ExchangeInstID)
+jsonRtnSet(OffsetFlag)
+jsonRtnSet(HedgeFlag)
+jsonRtnSet(Price)
+jsonRtnSet(Volume)
+jsonRtnSet(TradeDate)
+jsonRtnSet(TradeTime)
+jsonRtnSet(TradeType)
+jsonRtnSet(PriceSource)
+jsonRtnSet(TraderID)
+jsonRtnSet(OrderLocalID)
+jsonRtnSet(ClearingPartID)
+jsonRtnSet(BusinessUnit)
+jsonRtnSet(SequenceNo)
+jsonRtnSet(TradingDay)
+jsonRtnSet(SettlementID)
+jsonRtnSet(BrokerOrderSeq)
+jsonRtnSet(TradeSource)
+#undef jsonRtnSet
 		*(cbArray + 2) = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Local<Value>::New(Undefined());
+		*(cbArray + 2) = Undefined(isolate);
 	}
 	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
 	return;
 }
 void WrapTrader::pkg_cb_rtntrade(CbRtnField* data, Local<Value>*cbArray) {
+	CSCOPE
     if (data->rtnField){ 
 	    CThostFtdcTradeField* pTrade = static_cast<CThostFtdcTradeField*>(data->rtnField);
-		Local<Object> jsonRtn = Object::New();
-		jsonRtn->Set(GETLOCALSymbol("BrokerID"), GETLOCAL(pTrade->BrokerID));
-		jsonRtn->Set(GETLOCALSymbol("InvestorID"), GETLOCAL(pTrade->InvestorID));
-		jsonRtn->Set(GETLOCALSymbol("InstrumentID"), GETLOCAL(pTrade->InstrumentID));
-		jsonRtn->Set(GETLOCALSymbol("OrderRef"), GETLOCAL(pTrade->OrderRef));
-		jsonRtn->Set(GETLOCALSymbol("UserID"), GETLOCAL(pTrade->UserID));
-		jsonRtn->Set(GETLOCALSymbol("ExchangeID"), GETLOCAL(pTrade->ExchangeID));
-		jsonRtn->Set(GETLOCALSymbol("TradeID"), GETLOCAL(pTrade->TradeID));
-		jsonRtn->Set(GETLOCALSymbol("Direction"), GETLOCAL(charto_string(pTrade->Direction).c_str()));  //var charval = String.fromCharCode(asciival);
-		jsonRtn->Set(GETLOCALSymbol("OrderSysID"), GETLOCAL(pTrade->OrderSysID));
-		jsonRtn->Set(GETLOCALSymbol("ParticipantID"), GETLOCAL(pTrade->ParticipantID));
-		jsonRtn->Set(GETLOCALSymbol("ClientID"), GETLOCAL(pTrade->ClientID));
-		jsonRtn->Set(GETLOCALSymbol("TradingRole"), Int32::New(pTrade->TradingRole));
-		jsonRtn->Set(GETLOCALSymbol("ExchangeInstID"), GETLOCAL(pTrade->ExchangeInstID));
-		jsonRtn->Set(GETLOCALSymbol("OffsetFlag"), Int32::New(pTrade->OffsetFlag));
-		jsonRtn->Set(GETLOCALSymbol("HedgeFlag"), Int32::New(pTrade->HedgeFlag));
-		jsonRtn->Set(GETLOCALSymbol("Price"), Number::New(pTrade->Price));
-		jsonRtn->Set(GETLOCALSymbol("Volume"), Int32::New(pTrade->Volume));
-		jsonRtn->Set(GETLOCALSymbol("TradeDate"), GETLOCAL(pTrade->TradeDate));
-		jsonRtn->Set(GETLOCALSymbol("TradeTime"), GETLOCAL(pTrade->TradeTime));
-		jsonRtn->Set(GETLOCALSymbol("TradeType"), Int32::New(pTrade->TradeType));
-		jsonRtn->Set(GETLOCALSymbol("PriceSource"), GETLOCAL(charto_string(pTrade->PriceSource).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("TraderID"), GETLOCAL(pTrade->TraderID));
-		jsonRtn->Set(GETLOCALSymbol("OrderLocalID"), GETLOCAL(pTrade->OrderLocalID));
-		jsonRtn->Set(GETLOCALSymbol("ClearingPartID"), GETLOCAL(pTrade->ClearingPartID));
-		jsonRtn->Set(GETLOCALSymbol("BusinessUnit"), GETLOCAL(pTrade->BusinessUnit));
-		jsonRtn->Set(GETLOCALSymbol("SequenceNo"), Int32::New(pTrade->SequenceNo));
-		jsonRtn->Set(GETLOCALSymbol("TradingDay"), GETLOCAL(pTrade->TradingDay));
-		jsonRtn->Set(GETLOCALSymbol("SettlementID"), Int32::New(pTrade->SettlementID));
-		jsonRtn->Set(GETLOCALSymbol("BrokerOrderSeq"), Int32::New(pTrade->BrokerOrderSeq));
-		jsonRtn->Set(GETLOCALSymbol("TradeSource"), GETLOCAL(charto_string(pTrade->TradeSource).c_str()));
+		Local<Object> jsonRtn = Object::New(isolate);
+#define jsonRtnSet(x) SetObjectProperty(jsonRtn, isolate, #x, pTrade->x);
+jsonRtnSet(BrokerID)
+jsonRtnSet(InvestorID)
+jsonRtnSet(InstrumentID)
+jsonRtnSet(OrderRef)
+jsonRtnSet(UserID)
+jsonRtnSet(ExchangeID)
+jsonRtnSet(TradeID)
+jsonRtnSet(Direction)
+jsonRtnSet(OrderSysID)
+jsonRtnSet(ParticipantID)
+jsonRtnSet(ClientID)
+jsonRtnSet(TradingRole)
+jsonRtnSet(ExchangeInstID)
+jsonRtnSet(OffsetFlag)
+jsonRtnSet(HedgeFlag)
+jsonRtnSet(Price)
+jsonRtnSet(Volume)
+jsonRtnSet(TradeDate)
+jsonRtnSet(TradeTime)
+jsonRtnSet(TradeType)
+jsonRtnSet(PriceSource)
+jsonRtnSet(TraderID)
+jsonRtnSet(OrderLocalID)
+jsonRtnSet(ClearingPartID)
+jsonRtnSet(BusinessUnit)
+jsonRtnSet(SequenceNo)
+jsonRtnSet(TradingDay)
+jsonRtnSet(SettlementID)
+jsonRtnSet(BrokerOrderSeq)
+jsonRtnSet(TradeSource)
+#undef jsonRtnSet
 		*cbArray = jsonRtn;
 	}
 	else {
-		*cbArray = Local<Value>::New(Undefined());
+		*cbArray = Undefined(isolate);
 	}
 	 
 	return;
 }
 void WrapTrader::pkg_cb_rqinvestorposition(CbRtnField* data, Local<Value>*cbArray) {
-	*cbArray = Int32::New(data->nRequestID);
-	*(cbArray + 1) = Boolean::New(data->bIsLast)->ToBoolean();
+	CSCOPE
+	*cbArray = GETLOCAL(data->nRequestID);
+	*(cbArray + 1) = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcInvestorPositionField* _pInvestorPosition = static_cast<CThostFtdcInvestorPositionField*>(data->rtnField);
-		Local<Object> jsonRtn = Object::New();
-		jsonRtn->Set(GETLOCALSymbol("InstrumentID"), GETLOCAL(_pInvestorPosition->InstrumentID));
-		jsonRtn->Set(GETLOCALSymbol("BrokerID"), GETLOCAL(_pInvestorPosition->BrokerID));
-		jsonRtn->Set(GETLOCALSymbol("InvestorID"), GETLOCAL(_pInvestorPosition->InvestorID)); 
-		jsonRtn->Set(GETLOCALSymbol("PosiDirection"), GETLOCAL(charto_string(_pInvestorPosition->PosiDirection).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("HedgeFlag"), GETLOCAL(charto_string(_pInvestorPosition->HedgeFlag).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("PositionDate"), Int32::New(_pInvestorPosition->PositionDate));
-		jsonRtn->Set(GETLOCALSymbol("YdPosition"), Int32::New(_pInvestorPosition->YdPosition));
-		jsonRtn->Set(GETLOCALSymbol("Position"), Int32::New(_pInvestorPosition->Position));
-		jsonRtn->Set(GETLOCALSymbol("LongFrozen"), Int32::New(_pInvestorPosition->LongFrozen));
-		jsonRtn->Set(GETLOCALSymbol("ShortFrozen"), Int32::New(_pInvestorPosition->ShortFrozen));
-		jsonRtn->Set(GETLOCALSymbol("LongFrozenAmount"), Number::New(_pInvestorPosition->LongFrozenAmount));
-		jsonRtn->Set(GETLOCALSymbol("ShortFrozenAmount"), Number::New(_pInvestorPosition->ShortFrozenAmount));
-		jsonRtn->Set(GETLOCALSymbol("OpenVolume"), Int32::New(_pInvestorPosition->OpenVolume));
-		jsonRtn->Set(GETLOCALSymbol("CloseVolume"), Int32::New(_pInvestorPosition->CloseVolume));
-		jsonRtn->Set(GETLOCALSymbol("OpenAmount"), Number::New(_pInvestorPosition->OpenAmount));
-		jsonRtn->Set(GETLOCALSymbol("CloseAmount"), Number::New(_pInvestorPosition->CloseAmount));
-		jsonRtn->Set(GETLOCALSymbol("PositionCost"), Number::New(_pInvestorPosition->PositionCost));
-		jsonRtn->Set(GETLOCALSymbol("PreMargin"), Number::New(_pInvestorPosition->PreMargin));
-		jsonRtn->Set(GETLOCALSymbol("UseMargin"), Number::New(_pInvestorPosition->UseMargin));
-		jsonRtn->Set(GETLOCALSymbol("FrozenMargin"), Number::New(_pInvestorPosition->FrozenMargin));
-		jsonRtn->Set(GETLOCALSymbol("FrozenCash"), Number::New(_pInvestorPosition->FrozenCash));
-		jsonRtn->Set(GETLOCALSymbol("FrozenCommission"), Number::New(_pInvestorPosition->FrozenCommission));
-		jsonRtn->Set(GETLOCALSymbol("CashIn"), Number::New(_pInvestorPosition->CashIn));
-		jsonRtn->Set(GETLOCALSymbol("Commission"), Number::New(_pInvestorPosition->Commission));
-		jsonRtn->Set(GETLOCALSymbol("CloseProfit"), Number::New(_pInvestorPosition->CloseProfit));
-		jsonRtn->Set(GETLOCALSymbol("PositionProfit"), Number::New(_pInvestorPosition->PositionProfit));
-		jsonRtn->Set(GETLOCALSymbol("PreSettlementPrice"), Number::New(_pInvestorPosition->PreSettlementPrice));
-		jsonRtn->Set(GETLOCALSymbol("SettlementPrice"), Number::New(_pInvestorPosition->SettlementPrice));
-		jsonRtn->Set(GETLOCALSymbol("TradingDay"), GETLOCAL(_pInvestorPosition->TradingDay));
-		jsonRtn->Set(GETLOCALSymbol("SettlementID"), Int32::New(_pInvestorPosition->SettlementID));
-		jsonRtn->Set(GETLOCALSymbol("OpenCost"), Number::New(_pInvestorPosition->OpenCost));
-		jsonRtn->Set(GETLOCALSymbol("ExchangeMargin"), Number::New(_pInvestorPosition->ExchangeMargin));
-		jsonRtn->Set(GETLOCALSymbol("CombPosition"), Int32::New(_pInvestorPosition->CombPosition));
-		jsonRtn->Set(GETLOCALSymbol("CombLongFrozen"), Int32::New(_pInvestorPosition->CombLongFrozen));
-		jsonRtn->Set(GETLOCALSymbol("CombShortFrozen"), Int32::New(_pInvestorPosition->CombShortFrozen));
-		jsonRtn->Set(GETLOCALSymbol("CloseProfitByDate"), Number::New(_pInvestorPosition->CloseProfitByDate));
-		jsonRtn->Set(GETLOCALSymbol("CloseProfitByTrade"), Number::New(_pInvestorPosition->CloseProfitByTrade));
-		jsonRtn->Set(GETLOCALSymbol("TodayPosition"), Int32::New(_pInvestorPosition->TodayPosition));
-		jsonRtn->Set(GETLOCALSymbol("MarginRateByMoney"), Number::New(_pInvestorPosition->MarginRateByMoney));
-		jsonRtn->Set(GETLOCALSymbol("MarginRateByVolume"), Number::New(_pInvestorPosition->MarginRateByVolume));
+		Local<Object> jsonRtn = Object::New(isolate);
+#define jsonRtnSet(x) SetObjectProperty(jsonRtn, isolate, #x, _pInvestorPosition->x);
+jsonRtnSet(InstrumentID)
+jsonRtnSet(BrokerID)
+jsonRtnSet(InvestorID) 
+jsonRtnSet(PosiDirection)
+jsonRtnSet(HedgeFlag)
+jsonRtnSet(PositionDate)
+jsonRtnSet(YdPosition)
+jsonRtnSet(Position)
+jsonRtnSet(LongFrozen)
+jsonRtnSet(ShortFrozen)
+jsonRtnSet(LongFrozenAmount)
+jsonRtnSet(ShortFrozenAmount)
+jsonRtnSet(OpenVolume)
+jsonRtnSet(CloseVolume)
+jsonRtnSet(OpenAmount)
+jsonRtnSet(CloseAmount)
+jsonRtnSet(PositionCost)
+jsonRtnSet(PreMargin)
+jsonRtnSet(UseMargin)
+jsonRtnSet(FrozenMargin)
+jsonRtnSet(FrozenCash)
+jsonRtnSet(FrozenCommission)
+jsonRtnSet(CashIn)
+jsonRtnSet(Commission)
+jsonRtnSet(CloseProfit)
+jsonRtnSet(PositionProfit)
+jsonRtnSet(PreSettlementPrice)
+jsonRtnSet(SettlementPrice)
+jsonRtnSet(TradingDay)
+jsonRtnSet(SettlementID)
+jsonRtnSet(OpenCost)
+jsonRtnSet(ExchangeMargin)
+jsonRtnSet(CombPosition)
+jsonRtnSet(CombLongFrozen)
+jsonRtnSet(CombShortFrozen)
+jsonRtnSet(CloseProfitByDate)
+jsonRtnSet(CloseProfitByTrade)
+jsonRtnSet(TodayPosition)
+jsonRtnSet(MarginRateByMoney)
+jsonRtnSet(MarginRateByVolume)
+#undef jsonRtnSet
 		*(cbArray + 2) = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Local<Value>::New(Undefined());
+		*(cbArray + 2) = Undefined(isolate);
 	}
 	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
 	return;
 }
 void WrapTrader::pkg_cb_rqinvestorpositiondetail(CbRtnField* data, Local<Value>*cbArray) {
-	*cbArray = Int32::New(data->nRequestID);
-	*(cbArray + 1) = Boolean::New(data->bIsLast)->ToBoolean();
+	CSCOPE
+	*cbArray = GETLOCAL(data->nRequestID);
+	*(cbArray + 1) = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcInvestorPositionDetailField* pInvestorPositionDetail = static_cast<CThostFtdcInvestorPositionDetailField*>(data->rtnField);
-		Local<Object> jsonRtn = Object::New();
-		jsonRtn->Set(GETLOCALSymbol("InstrumentID"), GETLOCAL(pInvestorPositionDetail->InstrumentID));
-		jsonRtn->Set(GETLOCALSymbol("BrokerID"), GETLOCAL(pInvestorPositionDetail->BrokerID));
-		jsonRtn->Set(GETLOCALSymbol("InvestorID"), GETLOCAL(pInvestorPositionDetail->InvestorID));
-		jsonRtn->Set(GETLOCALSymbol("HedgeFlag"), GETLOCAL(charto_string(pInvestorPositionDetail->HedgeFlag).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("Direction"), GETLOCAL(charto_string(pInvestorPositionDetail->Direction).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("OpenDate"), GETLOCAL(pInvestorPositionDetail->OpenDate));
-		jsonRtn->Set(GETLOCALSymbol("TradeID"), GETLOCAL(pInvestorPositionDetail->TradeID));
-		jsonRtn->Set(GETLOCALSymbol("Volume"), Int32::New(pInvestorPositionDetail->Volume));
-		jsonRtn->Set(GETLOCALSymbol("OpenPrice"), Number::New(pInvestorPositionDetail->OpenPrice));
-		jsonRtn->Set(GETLOCALSymbol("TradingDay"), GETLOCAL(pInvestorPositionDetail->TradingDay));
-		jsonRtn->Set(GETLOCALSymbol("SettlementID"), Int32::New(pInvestorPositionDetail->SettlementID));
-		jsonRtn->Set(GETLOCALSymbol("TradeType"), GETLOCAL(charto_string(pInvestorPositionDetail->TradeType).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("CombInstrumentID"), GETLOCAL(pInvestorPositionDetail->CombInstrumentID));
-		jsonRtn->Set(GETLOCALSymbol("ExchangeID"), GETLOCAL(pInvestorPositionDetail->ExchangeID));
-		jsonRtn->Set(GETLOCALSymbol("CloseProfitByDate"), Number::New(pInvestorPositionDetail->CloseProfitByDate));
-		jsonRtn->Set(GETLOCALSymbol("CloseProfitByTrade"), Number::New(pInvestorPositionDetail->CloseProfitByTrade));
-		jsonRtn->Set(GETLOCALSymbol("PositionProfitByDate"), Number::New(pInvestorPositionDetail->PositionProfitByDate));
-		jsonRtn->Set(GETLOCALSymbol("PositionProfitByTrade"), Number::New(pInvestorPositionDetail->PositionProfitByTrade));
-		jsonRtn->Set(GETLOCALSymbol("Margin"), Number::New(pInvestorPositionDetail->Margin));
-		jsonRtn->Set(GETLOCALSymbol("ExchMargin"), Number::New(pInvestorPositionDetail->ExchMargin));
-		jsonRtn->Set(GETLOCALSymbol("MarginRateByMoney"), Number::New(pInvestorPositionDetail->MarginRateByMoney));
-		jsonRtn->Set(GETLOCALSymbol("MarginRateByVolume"), Number::New(pInvestorPositionDetail->MarginRateByVolume));
-		jsonRtn->Set(GETLOCALSymbol("LastSettlementPrice"), Number::New(pInvestorPositionDetail->LastSettlementPrice));
-		jsonRtn->Set(GETLOCALSymbol("SettlementPrice"), Number::New(pInvestorPositionDetail->SettlementPrice));
-		jsonRtn->Set(GETLOCALSymbol("CloseVolume"), Int32::New(pInvestorPositionDetail->CloseVolume));
-		jsonRtn->Set(GETLOCALSymbol("CloseAmount"), Number::New(pInvestorPositionDetail->CloseAmount));
+		Local<Object> jsonRtn = Object::New(isolate);
+#define jsonRtnSet(x) SetObjectProperty(jsonRtn, isolate, #x, pInvestorPositionDetail->x);
+jsonRtnSet(InstrumentID)
+jsonRtnSet(BrokerID)
+jsonRtnSet(InvestorID)
+jsonRtnSet(HedgeFlag)
+jsonRtnSet(Direction)
+jsonRtnSet(OpenDate)
+jsonRtnSet(TradeID)
+jsonRtnSet(Volume)
+jsonRtnSet(OpenPrice)
+jsonRtnSet(TradingDay)
+jsonRtnSet(SettlementID)
+jsonRtnSet(TradeType)
+jsonRtnSet(CombInstrumentID)
+jsonRtnSet(ExchangeID)
+jsonRtnSet(CloseProfitByDate)
+jsonRtnSet(CloseProfitByTrade)
+jsonRtnSet(PositionProfitByDate)
+jsonRtnSet(PositionProfitByTrade)
+jsonRtnSet(Margin)
+jsonRtnSet(ExchMargin)
+jsonRtnSet(MarginRateByMoney)
+jsonRtnSet(MarginRateByVolume)
+jsonRtnSet(LastSettlementPrice)
+jsonRtnSet(SettlementPrice)
+jsonRtnSet(CloseVolume)
+jsonRtnSet(CloseAmount)
+#undef jsonRtnSet
 		*(cbArray + 2) = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Local<Value>::New(Undefined());
+		*(cbArray + 2) = Undefined(isolate);
 	}
 	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
 	return;
 }
 void WrapTrader::pkg_cb_rqtradingaccount(CbRtnField* data, Local<Value>*cbArray) {
-	*cbArray = Int32::New(data->nRequestID);
-	*(cbArray + 1) = Boolean::New(data->bIsLast)->ToBoolean();
+	CSCOPE
+	*cbArray = GETLOCAL(data->nRequestID);
+	*(cbArray + 1) = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcTradingAccountField *pTradingAccount = static_cast<CThostFtdcTradingAccountField*>(data->rtnField);
-		Local<Object> jsonRtn = Object::New();
-		jsonRtn->Set(GETLOCALSymbol("BrokerID"), GETLOCAL(pTradingAccount->BrokerID));
-		jsonRtn->Set(GETLOCALSymbol("AccountID"), GETLOCAL(pTradingAccount->AccountID));
-		jsonRtn->Set(GETLOCALSymbol("PreMortgage"), Number::New(pTradingAccount->PreMortgage));
-		jsonRtn->Set(GETLOCALSymbol("PreCredit"), Number::New(pTradingAccount->PreCredit));
-		jsonRtn->Set(GETLOCALSymbol("PreDeposit"), Number::New(pTradingAccount->PreDeposit));
-		jsonRtn->Set(GETLOCALSymbol("PreBalance"), Number::New(pTradingAccount->PreBalance));
-		jsonRtn->Set(GETLOCALSymbol("PreMargin"), Number::New(pTradingAccount->PreMargin));
-		jsonRtn->Set(GETLOCALSymbol("InterestBase"), Number::New(pTradingAccount->InterestBase));
-		jsonRtn->Set(GETLOCALSymbol("Interest"), Number::New(pTradingAccount->Interest));
-		jsonRtn->Set(GETLOCALSymbol("Deposit"), Number::New(pTradingAccount->Deposit));
-		jsonRtn->Set(GETLOCALSymbol("Withdraw"), Number::New(pTradingAccount->Withdraw));
-		jsonRtn->Set(GETLOCALSymbol("FrozenMargin"), Number::New(pTradingAccount->FrozenMargin));
-		jsonRtn->Set(GETLOCALSymbol("FrozenCash"), Number::New(pTradingAccount->FrozenCash));
-		jsonRtn->Set(GETLOCALSymbol("FrozenCommission"), Number::New(pTradingAccount->FrozenCommission));
-		jsonRtn->Set(GETLOCALSymbol("CurrMargin"), Number::New(pTradingAccount->CurrMargin));
-		jsonRtn->Set(GETLOCALSymbol("CashIn"), Number::New(pTradingAccount->CashIn));
-		jsonRtn->Set(GETLOCALSymbol("Commission"), Number::New(pTradingAccount->Commission));
-		jsonRtn->Set(GETLOCALSymbol("CloseProfit"), Number::New(pTradingAccount->CloseProfit));
-		jsonRtn->Set(GETLOCALSymbol("PositionProfit"), Number::New(pTradingAccount->PositionProfit));
-		jsonRtn->Set(GETLOCALSymbol("Balance"), Number::New(pTradingAccount->Balance));
-		jsonRtn->Set(GETLOCALSymbol("Available"), Number::New(pTradingAccount->Available));
-		jsonRtn->Set(GETLOCALSymbol("WithdrawQuota"), Number::New(pTradingAccount->WithdrawQuota));
-		jsonRtn->Set(GETLOCALSymbol("Reserve"), Number::New(pTradingAccount->Reserve));
-		jsonRtn->Set(GETLOCALSymbol("TradingDay"), GETLOCAL(pTradingAccount->TradingDay));
-		jsonRtn->Set(GETLOCALSymbol("SettlementID"), Int32::New(pTradingAccount->SettlementID));
-		jsonRtn->Set(GETLOCALSymbol("Credit"), Number::New(pTradingAccount->Credit));
-		jsonRtn->Set(GETLOCALSymbol("Mortgage"), Number::New(pTradingAccount->Mortgage));
-		jsonRtn->Set(GETLOCALSymbol("ExchangeMargin"), Number::New(pTradingAccount->ExchangeMargin));
-		jsonRtn->Set(GETLOCALSymbol("DeliveryMargin"), Number::New(pTradingAccount->DeliveryMargin));
-		jsonRtn->Set(GETLOCALSymbol("ExchangeDeliveryMargin"), Number::New(pTradingAccount->ExchangeDeliveryMargin));
-		jsonRtn->Set(GETLOCALSymbol("ReserveBalance"), Number::New(pTradingAccount->ReserveBalance));
-		jsonRtn->Set(GETLOCALSymbol("CurrencyID"), GETLOCAL(pTradingAccount->CurrencyID));
-		jsonRtn->Set(GETLOCALSymbol("PreFundMortgageIn"), Number::New(pTradingAccount->PreFundMortgageIn));
-		jsonRtn->Set(GETLOCALSymbol("PreFundMortgageOut"), Number::New(pTradingAccount->PreFundMortgageOut));
-		jsonRtn->Set(GETLOCALSymbol("FundMortgageIn"), Number::New(pTradingAccount->FundMortgageIn));
-		jsonRtn->Set(GETLOCALSymbol("FundMortgageOut"), Number::New(pTradingAccount->FundMortgageOut));
-		jsonRtn->Set(GETLOCALSymbol("FundMortgageAvailable"), Number::New(pTradingAccount->FundMortgageAvailable));
-		jsonRtn->Set(GETLOCALSymbol("MortgageableFund"), Number::New(pTradingAccount->MortgageableFund));
-		jsonRtn->Set(GETLOCALSymbol("SpecProductMargin"), Number::New(pTradingAccount->SpecProductMargin));
-		jsonRtn->Set(GETLOCALSymbol("SpecProductFrozenMargin"), Number::New(pTradingAccount->SpecProductFrozenMargin));
-		jsonRtn->Set(GETLOCALSymbol("SpecProductCommission"), Number::New(pTradingAccount->SpecProductCommission));
-		jsonRtn->Set(GETLOCALSymbol("SpecProductFrozenCommission"), Number::New(pTradingAccount->SpecProductFrozenCommission));
-		jsonRtn->Set(GETLOCALSymbol("SpecProductPositionProfit"), Number::New(pTradingAccount->SpecProductPositionProfit));
-		jsonRtn->Set(GETLOCALSymbol("SpecProductCloseProfit"), Number::New(pTradingAccount->SpecProductCloseProfit));
-		jsonRtn->Set(GETLOCALSymbol("SpecProductPositionProfitByAlg"), Number::New(pTradingAccount->SpecProductPositionProfitByAlg));
-		jsonRtn->Set(GETLOCALSymbol("SpecProductExchangeMargin"), Number::New(pTradingAccount->SpecProductExchangeMargin));
+		Local<Object> jsonRtn = Object::New(isolate);
+#define jsonRtnSet(x) SetObjectProperty(jsonRtn, isolate, #x, pTradingAccount->x);
+jsonRtnSet(BrokerID)
+jsonRtnSet(AccountID)
+jsonRtnSet(PreMortgage)
+jsonRtnSet(PreCredit)
+jsonRtnSet(PreDeposit)
+jsonRtnSet(PreBalance)
+jsonRtnSet(PreMargin)
+jsonRtnSet(InterestBase)
+jsonRtnSet(Interest)
+jsonRtnSet(Deposit)
+jsonRtnSet(Withdraw)
+jsonRtnSet(FrozenMargin)
+jsonRtnSet(FrozenCash)
+jsonRtnSet(FrozenCommission)
+jsonRtnSet(CurrMargin)
+jsonRtnSet(CashIn)
+jsonRtnSet(Commission)
+jsonRtnSet(CloseProfit)
+jsonRtnSet(PositionProfit)
+jsonRtnSet(Balance)
+jsonRtnSet(Available)
+jsonRtnSet(WithdrawQuota)
+jsonRtnSet(Reserve)
+jsonRtnSet(TradingDay)
+jsonRtnSet(SettlementID)
+jsonRtnSet(Credit)
+jsonRtnSet(Mortgage)
+jsonRtnSet(ExchangeMargin)
+jsonRtnSet(DeliveryMargin)
+jsonRtnSet(ExchangeDeliveryMargin)
+jsonRtnSet(ReserveBalance)
+jsonRtnSet(CurrencyID)
+jsonRtnSet(PreFundMortgageIn)
+jsonRtnSet(PreFundMortgageOut)
+jsonRtnSet(FundMortgageIn)
+jsonRtnSet(FundMortgageOut)
+jsonRtnSet(FundMortgageAvailable)
+jsonRtnSet(MortgageableFund)
+jsonRtnSet(SpecProductMargin)
+jsonRtnSet(SpecProductFrozenMargin)
+jsonRtnSet(SpecProductCommission)
+jsonRtnSet(SpecProductFrozenCommission)
+jsonRtnSet(SpecProductPositionProfit)
+jsonRtnSet(SpecProductCloseProfit)
+jsonRtnSet(SpecProductPositionProfitByAlg)
+jsonRtnSet(SpecProductExchangeMargin)
+#undef jsonRtnSet
 		*(cbArray + 2) = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Local<Value>::New(Undefined());
+		*(cbArray + 2) = Undefined(isolate);
 	}
 	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
 	return;
 }
 void WrapTrader::pkg_cb_rqinstrument(CbRtnField* data, Local<Value>*cbArray) {
-	*cbArray = Int32::New(data->nRequestID);
-	*(cbArray + 1) = Boolean::New(data->bIsLast)->ToBoolean();
+	CSCOPE
+	*cbArray = GETLOCAL(data->nRequestID);
+	*(cbArray + 1) = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcInstrumentField *pInstrument = static_cast<CThostFtdcInstrumentField*>(data->rtnField);
-		Local<Object> jsonRtn = Object::New();
-		jsonRtn->Set(GETLOCALSymbol("InstrumentID"), GETLOCAL(pInstrument->InstrumentID));
-		jsonRtn->Set(GETLOCALSymbol("ExchangeID"), GETLOCAL(pInstrument->ExchangeID));
-		jsonRtn->Set(GETLOCALSymbol("InstrumentName"), GETLOCAL(pInstrument->InstrumentName));
-		jsonRtn->Set(GETLOCALSymbol("ExchangeInstID"), GETLOCAL(pInstrument->ExchangeInstID));
-		jsonRtn->Set(GETLOCALSymbol("ProductID"), GETLOCAL(pInstrument->ProductID));
-		jsonRtn->Set(GETLOCALSymbol("ProductClass"), GETLOCAL(charto_string(pInstrument->ProductClass).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("DeliveryYear"), Int32::New(pInstrument->DeliveryYear));
-		jsonRtn->Set(GETLOCALSymbol("DeliveryMonth"), Int32::New(pInstrument->DeliveryMonth));
-		jsonRtn->Set(GETLOCALSymbol("MaxMarketOrderVolume"), Int32::New(pInstrument->MaxMarketOrderVolume));
-		jsonRtn->Set(GETLOCALSymbol("MinMarketOrderVolume"), Int32::New(pInstrument->MinMarketOrderVolume));
-		jsonRtn->Set(GETLOCALSymbol("MaxLimitOrderVolume"), Int32::New(pInstrument->MaxLimitOrderVolume));
-		jsonRtn->Set(GETLOCALSymbol("MinLimitOrderVolume"), Int32::New(pInstrument->MinLimitOrderVolume));
-		jsonRtn->Set(GETLOCALSymbol("VolumeMultiple"), Int32::New(pInstrument->VolumeMultiple));
-		jsonRtn->Set(GETLOCALSymbol("PriceTick"), Number::New(pInstrument->PriceTick));
-		jsonRtn->Set(GETLOCALSymbol("CreateDate"), GETLOCAL(pInstrument->CreateDate));
-		jsonRtn->Set(GETLOCALSymbol("OpenDate"), GETLOCAL(pInstrument->OpenDate));
-		jsonRtn->Set(GETLOCALSymbol("ExpireDate"), GETLOCAL(pInstrument->ExpireDate));
-		jsonRtn->Set(GETLOCALSymbol("StartDelivDate"), GETLOCAL(pInstrument->StartDelivDate));
-		jsonRtn->Set(GETLOCALSymbol("EndDelivDate"), GETLOCAL(pInstrument->EndDelivDate));
-		jsonRtn->Set(GETLOCALSymbol("InstLifePhase"), Int32::New(pInstrument->InstLifePhase));
-		jsonRtn->Set(GETLOCALSymbol("IsTrading"), Int32::New(pInstrument->IsTrading));
-		jsonRtn->Set(GETLOCALSymbol("PositionType"), GETLOCAL(charto_string(pInstrument->PositionType).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("PositionDateType"), GETLOCAL(charto_string(pInstrument->PositionDateType).c_str()));
-		jsonRtn->Set(GETLOCALSymbol("LongMarginRatio"), Number::New(pInstrument->LongMarginRatio));
-		jsonRtn->Set(GETLOCALSymbol("ShortMarginRatio"), Number::New(pInstrument->ShortMarginRatio));
-		jsonRtn->Set(GETLOCALSymbol("MaxMarginSideAlgorithm"), GETLOCAL(charto_string(pInstrument->MaxMarginSideAlgorithm).c_str()));
+		Local<Object> jsonRtn = Object::New(isolate);
+#define jsonRtnSet(x) SetObjectProperty(jsonRtn, isolate, #x, pInstrument->x);
+jsonRtnSet(InstrumentID)
+jsonRtnSet(ExchangeID)
+jsonRtnSet(InstrumentName)
+jsonRtnSet(ExchangeInstID)
+jsonRtnSet(ProductID)
+jsonRtnSet(ProductClass)
+jsonRtnSet(DeliveryYear)
+jsonRtnSet(DeliveryMonth)
+jsonRtnSet(MaxMarketOrderVolume)
+jsonRtnSet(MinMarketOrderVolume)
+jsonRtnSet(MaxLimitOrderVolume)
+jsonRtnSet(MinLimitOrderVolume)
+jsonRtnSet(VolumeMultiple)
+jsonRtnSet(PriceTick)
+jsonRtnSet(CreateDate)
+jsonRtnSet(OpenDate)
+jsonRtnSet(ExpireDate)
+jsonRtnSet(StartDelivDate)
+jsonRtnSet(EndDelivDate)
+jsonRtnSet(InstLifePhase)
+jsonRtnSet(IsTrading)
+jsonRtnSet(PositionType)
+jsonRtnSet(PositionDateType)
+jsonRtnSet(LongMarginRatio)
+jsonRtnSet(ShortMarginRatio)
+jsonRtnSet(MaxMarginSideAlgorithm)
+#undef jsonRtnSet
 		*(cbArray + 2) = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Local<Value>::New(Undefined());
+		*(cbArray + 2) = Undefined(isolate);
 	}
 	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
 	return;
 }
 void WrapTrader::pkg_cb_rqdepthmarketdata(CbRtnField* data, Local<Value>*cbArray) {
-	*cbArray = Int32::New(data->nRequestID);
-	*(cbArray + 1) = Boolean::New(data->bIsLast)->ToBoolean();
+	CSCOPE
+	*cbArray = GETLOCAL(data->nRequestID);
+	*(cbArray + 1) = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcDepthMarketDataField *pDepthMarketData = static_cast<CThostFtdcDepthMarketDataField*>(data->rtnField);
-		Local<Object> jsonRtn = Object::New();
-		jsonRtn->Set(GETLOCALSymbol("TradingDay"), GETLOCAL(pDepthMarketData->TradingDay));
-		jsonRtn->Set(GETLOCALSymbol("InstrumentID"), GETLOCAL(pDepthMarketData->InstrumentID));
-		jsonRtn->Set(GETLOCALSymbol("ExchangeID"), GETLOCAL(pDepthMarketData->ExchangeID));
-		jsonRtn->Set(GETLOCALSymbol("ExchangeInstID"), GETLOCAL(pDepthMarketData->ExchangeInstID));
-		jsonRtn->Set(GETLOCALSymbol("LastPrice"), Number::New(pDepthMarketData->LastPrice));
-		jsonRtn->Set(GETLOCALSymbol("PreSettlementPrice"), Number::New(pDepthMarketData->PreSettlementPrice));
-		jsonRtn->Set(GETLOCALSymbol("PreClosePrice"), Number::New(pDepthMarketData->PreClosePrice));
-		jsonRtn->Set(GETLOCALSymbol("PreOpenInterest"), Number::New(pDepthMarketData->PreOpenInterest));
-		jsonRtn->Set(GETLOCALSymbol("OpenPrice"), Number::New(pDepthMarketData->OpenPrice));
-		jsonRtn->Set(GETLOCALSymbol("HighestPrice"), Number::New(pDepthMarketData->HighestPrice));
-		jsonRtn->Set(GETLOCALSymbol("LowestPrice"), Number::New(pDepthMarketData->LowestPrice));
-		jsonRtn->Set(GETLOCALSymbol("Volume"), Int32::New(pDepthMarketData->Volume));
-		jsonRtn->Set(GETLOCALSymbol("Turnover"), Number::New(pDepthMarketData->Turnover));
-		jsonRtn->Set(GETLOCALSymbol("OpenInterest"), Number::New(pDepthMarketData->OpenInterest));
-		jsonRtn->Set(GETLOCALSymbol("ClosePrice"), Number::New(pDepthMarketData->ClosePrice));
-		jsonRtn->Set(GETLOCALSymbol("SettlementPrice"), Number::New(pDepthMarketData->SettlementPrice));
-		jsonRtn->Set(GETLOCALSymbol("UpperLimitPrice"), Number::New(pDepthMarketData->UpperLimitPrice));
-		jsonRtn->Set(GETLOCALSymbol("LowerLimitPrice"), Number::New(pDepthMarketData->LowerLimitPrice));
-		jsonRtn->Set(GETLOCALSymbol("PreDelta"), Number::New(pDepthMarketData->PreDelta));
-		jsonRtn->Set(GETLOCALSymbol("CurrDelta"), Number::New(pDepthMarketData->CurrDelta));
-		jsonRtn->Set(GETLOCALSymbol("UpdateTime"), GETLOCAL(pDepthMarketData->UpdateTime));
-		jsonRtn->Set(GETLOCALSymbol("UpdateMillisec"), Int32::New(pDepthMarketData->UpdateMillisec));
-		jsonRtn->Set(GETLOCALSymbol("BidPrice1"), Number::New(pDepthMarketData->BidPrice1));
-		jsonRtn->Set(GETLOCALSymbol("BidVolume1"), Number::New(pDepthMarketData->BidVolume1));
-		jsonRtn->Set(GETLOCALSymbol("AskPrice1"), Number::New(pDepthMarketData->AskPrice1));
-		jsonRtn->Set(GETLOCALSymbol("AskVolume1"), Number::New(pDepthMarketData->AskVolume1));
-		jsonRtn->Set(GETLOCALSymbol("BidPrice2"), Number::New(pDepthMarketData->BidPrice2));
-		jsonRtn->Set(GETLOCALSymbol("BidVolume2"), Number::New(pDepthMarketData->BidVolume2));
-		jsonRtn->Set(GETLOCALSymbol("AskPrice2"), Number::New(pDepthMarketData->AskPrice2));
-		jsonRtn->Set(GETLOCALSymbol("AskVolume2"), Number::New(pDepthMarketData->AskVolume2));
-		jsonRtn->Set(GETLOCALSymbol("BidPrice3"), Number::New(pDepthMarketData->BidPrice3));
-		jsonRtn->Set(GETLOCALSymbol("BidVolume3"), Number::New(pDepthMarketData->BidVolume3));
-		jsonRtn->Set(GETLOCALSymbol("AskPrice3"), Number::New(pDepthMarketData->AskPrice3));
-		jsonRtn->Set(GETLOCALSymbol("AskVolume3"), Number::New(pDepthMarketData->AskVolume3));
-		jsonRtn->Set(GETLOCALSymbol("BidPrice4"), Number::New(pDepthMarketData->BidPrice4));
-		jsonRtn->Set(GETLOCALSymbol("BidVolume4"), Number::New(pDepthMarketData->BidVolume4));
-		jsonRtn->Set(GETLOCALSymbol("AskPrice4"), Number::New(pDepthMarketData->AskPrice4));
-		jsonRtn->Set(GETLOCALSymbol("AskVolume4"), Number::New(pDepthMarketData->AskVolume4));
-		jsonRtn->Set(GETLOCALSymbol("BidPrice5"), Number::New(pDepthMarketData->BidPrice5));
-		jsonRtn->Set(GETLOCALSymbol("BidVolume5"), Number::New(pDepthMarketData->BidVolume5));
-		jsonRtn->Set(GETLOCALSymbol("AskPrice5"), Number::New(pDepthMarketData->AskPrice5));
-		jsonRtn->Set(GETLOCALSymbol("AskVolume5"), Number::New(pDepthMarketData->AskVolume5));
-		jsonRtn->Set(GETLOCALSymbol("AveragePrice"), Number::New(pDepthMarketData->AveragePrice));
-		jsonRtn->Set(GETLOCALSymbol("ActionDay"), GETLOCAL(pDepthMarketData->ActionDay));
+		Local<Object> jsonRtn = Object::New(isolate);
+#define jsonRtnSet(x) SetObjectProperty(jsonRtn, isolate, #x, pDepthMarketData->x);
+jsonRtnSet(TradingDay)
+jsonRtnSet(InstrumentID)
+jsonRtnSet(ExchangeID)
+jsonRtnSet(ExchangeInstID)
+jsonRtnSet(LastPrice)
+jsonRtnSet(PreSettlementPrice)
+jsonRtnSet(PreClosePrice)
+jsonRtnSet(PreOpenInterest)
+jsonRtnSet(OpenPrice)
+jsonRtnSet(HighestPrice)
+jsonRtnSet(LowestPrice)
+jsonRtnSet(Volume)
+jsonRtnSet(Turnover)
+jsonRtnSet(OpenInterest)
+jsonRtnSet(ClosePrice)
+jsonRtnSet(SettlementPrice)
+jsonRtnSet(UpperLimitPrice)
+jsonRtnSet(LowerLimitPrice)
+jsonRtnSet(PreDelta)
+jsonRtnSet(CurrDelta)
+jsonRtnSet(UpdateTime)
+jsonRtnSet(UpdateMillisec)
+jsonRtnSet(BidPrice1)
+jsonRtnSet(BidVolume1)
+jsonRtnSet(AskPrice1)
+jsonRtnSet(AskVolume1)
+jsonRtnSet(BidPrice2)
+jsonRtnSet(BidVolume2)
+jsonRtnSet(AskPrice2)
+jsonRtnSet(AskVolume2)
+jsonRtnSet(BidPrice3)
+jsonRtnSet(BidVolume3)
+jsonRtnSet(AskPrice3)
+jsonRtnSet(AskVolume3)
+jsonRtnSet(BidPrice4)
+jsonRtnSet(BidVolume4)
+jsonRtnSet(AskPrice4)
+jsonRtnSet(AskVolume4)
+jsonRtnSet(BidPrice5)
+jsonRtnSet(BidVolume5)
+jsonRtnSet(AskPrice5)
+jsonRtnSet(AskVolume5)
+jsonRtnSet(AveragePrice)
+jsonRtnSet(ActionDay)
+#undef jsonRtnSet
 		*(cbArray + 2) = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Local<Value>::New(Undefined());
+		*(cbArray + 2) = Undefined(isolate);
 	}
 	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
 	return;
 }
 void WrapTrader::pkg_cb_rqsettlementinfo(CbRtnField* data, Local<Value>*cbArray) {
-	*cbArray = Int32::New(data->nRequestID);
-	*(cbArray + 1) = Boolean::New(data->bIsLast)->ToBoolean();
+	CSCOPE
+	*cbArray = GETLOCAL(data->nRequestID);
+	*(cbArray + 1) = GETLOCAL(data->bIsLast);
     if(data->rtnField!=NULL){
 	    CThostFtdcSettlementInfoField *pSettlementInfo = static_cast<CThostFtdcSettlementInfoField*>(data->rtnField);
-		Local<Object> jsonRtn = Object::New();
-		jsonRtn->Set(GETLOCALSymbol("TradingDay"), GETLOCAL(pSettlementInfo->TradingDay));
-		jsonRtn->Set(GETLOCALSymbol("SettlementID"), Int32::New(pSettlementInfo->SettlementID));
-		jsonRtn->Set(GETLOCALSymbol("BrokerID"), GETLOCAL(pSettlementInfo->BrokerID));
-		jsonRtn->Set(GETLOCALSymbol("InvestorID"), GETLOCAL(pSettlementInfo->InvestorID));
-		jsonRtn->Set(GETLOCALSymbol("SequenceNo"), Int32::New(pSettlementInfo->SequenceNo));
-	    jsonRtn->Set(GETLOCALSymbol("Content"), GETLOCAL(pSettlementInfo->Content));
+		Local<Object> jsonRtn = Object::New(isolate);
+#define jsonRtnSet(x) SetObjectProperty(jsonRtn, isolate, #x, pSettlementInfo->x);
+jsonRtnSet(TradingDay)
+jsonRtnSet(SettlementID)
+jsonRtnSet(BrokerID)
+jsonRtnSet(InvestorID)
+jsonRtnSet(SequenceNo)
+jsonRtnSet(Content)
+#undef jsonRtnSet
 	    *(cbArray + 2) = jsonRtn;
 	}
 	else {
-	    *(cbArray + 2) = Local<Value>::New(Undefined());
+	    *(cbArray + 2) = Undefined(isolate);
     }
 	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
 	return;
 }
 void WrapTrader::pkg_cb_rsperror(CbRtnField* data, Local<Value>*cbArray) {
-	*cbArray = Int32::New(data->nRequestID);
-	*(cbArray + 1) = Boolean::New(data->bIsLast)->ToBoolean();
+	CSCOPE
+	*cbArray = GETLOCAL(data->nRequestID);
+	*(cbArray + 1) = GETLOCAL(data->bIsLast);
 	*(cbArray + 2) = pkg_rspinfo(data->rspInfo);
 	return;
 }
 Local<Value> WrapTrader::pkg_rspinfo(void *vpRspInfo) {
+	CSCOPE
 	if (vpRspInfo) {
         CThostFtdcRspInfoField *pRspInfo = static_cast<CThostFtdcRspInfoField*>(vpRspInfo);
-		Local<Object> jsonInfo = Object::New();
-		jsonInfo->Set(GETLOCALSymbol("ErrorID"), Int32::New(pRspInfo->ErrorID));
-		jsonInfo->Set(GETLOCALSymbol("ErrorMsg"), GETLOCAL(pRspInfo->ErrorMsg));
+		Local<Object> jsonInfo = Object::New(isolate);
+		SetObjectProperty(jsonInfo, isolate, "ErrorID", pRspInfo->ErrorID);
+		SetObjectProperty(jsonInfo, isolate, "ErrorMsg", pRspInfo->ErrorMsg);
 		return jsonInfo;
 	}
 	else {
-		return 	Local<Value>::New(Undefined());
+		return 	Undefined(isolate);
 	}
 }

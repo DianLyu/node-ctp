@@ -23,7 +23,7 @@ extern std::string charto_string(char val);
 
 class WrapTrader : public node::ObjectWrap {
 public:
-	WrapTrader(void);
+	WrapTrader(const FunctionCallbackInfo<Value>& args);
 	~WrapTrader(void);
 
 	///连接前置机
@@ -86,12 +86,11 @@ private:
 	static int s_uuid;
 	static void FunCallback(CbRtnField *data);
 	static void FunRtnCallback(int result, void* baton);
-	static Persistent<Function> constructor;
+	//static Persistent<Function> constructor;
 	static std::map<const char*, int,ptrCmp> event_map;
-	static std::map<int, Persistent<Function> > callback_map;
-	static std::map<int, Persistent<Function> > fun_rtncb_map; 	
+	static std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > callback_map;
+	static std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > fun_rtncb_map;
 };
-
 
 
 #endif

@@ -22,7 +22,7 @@ extern std::string to_string(int val);
 
 class WrapMdUser :public node::ObjectWrap {
 public:
-	WrapMdUser(void);
+	WrapMdUser(const FunctionCallbackInfo<Value>& args);
 	~WrapMdUser(void);
 	static void Connect(const FunctionCallbackInfo<Value>& args);
 	static void On(const FunctionCallbackInfo<Value>& args);
@@ -46,9 +46,8 @@ private:
 	static void FunCallback(CbRtnField *data);
 	static void FunRtnCallback(int result, void* baton);
 	static std::map<const char*, int,ptrCmp> event_map;
-	static std::map<int, Persistent<Function> > callback_map;
-	static std::map<int, Persistent<Function> > fun_rtncb_map;
+	static std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > callback_map;
+	static std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > fun_rtncb_map;
 };
-
 
 #endif

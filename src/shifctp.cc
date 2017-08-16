@@ -1,11 +1,10 @@
 #include <node.h>
 #include <v8.h>
+using namespace v8;
 #include "defines.h"
 
 #include "wrap_trader.h"
 #include "wrap_mduser.h"
-
-using namespace v8;
 
 bool islog;//log?
 
