@@ -8,6 +8,7 @@ std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > WrapMdU
 std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > WrapMdUser::fun_rtncb_map;
 WrapMdUser::WrapMdUser(const FunctionCallbackInfo<Value>& args) {
 	logger_cout("wrap_mduser------>object start init");
+	this->Wrap(args.This());
 	uvMdUser = new uv_mduser();
 	logger_cout("wrap_mduser------>object init successed");
 }
@@ -18,8 +19,7 @@ WrapMdUser::~WrapMdUser() {
     }
 	logger_cout("wrape_mduser------>object destroyed");
 }
-template<>
-Persistent<Function> Constructor<WrapMdUser>::constructor;
+DECL_CONSTR(WrapMdUser)
 void WrapMdUser::Init(Handle<Object> target) {
 	NEW_CONSTR(WrapMdUser);
 	initEventMap();
@@ -54,7 +54,6 @@ FUNCTIONCALLBACK(WrapMdUser::On)
 
 	Local<String> eventName = args[0]->ToString();
 	Local<Function> cb = Local<Function>::Cast(args[1]);
-	//String::AsciiValue eNameAscii(eventName);
 	String::Utf8Value eNameAscii(eventName);
 	
 	auto eIt = event_map.find(*eNameAscii);
@@ -70,7 +69,6 @@ FUNCTIONCALLBACK(WrapMdUser::On)
 		return;
 	}
 	AddToMap(callback_map, eIt->second, cb);
-	//callback_map[eIt->second] = Persistent<Function>(isolate,cb);
 	obj->uvMdUser->On(*eNameAscii,eIt->second, FunCallback);
 	args.GetReturnValue().Set(Int32::New(isolate, 0));
 }
@@ -92,16 +90,12 @@ FUNCTIONCALLBACK(WrapMdUser::Connect)
 
 	Local<String> frontAddr = args[0]->ToString();
 	Local<String> szPath = args[1]->IsUndefined() ? GETLOCAL("m") : args[1]->ToString();
-	//String::Utf8Value addrAscii(frontAddr);
-	//String::Utf8Value pathAscii(szPath);
 
 	UVConnectField pConnectField;
 	memset(&pConnectField, 0, sizeof(pConnectField));
 	frontAddr->WriteOneByte((uint8_t*)pConnectField.front_addr);
-	//strcpy(pConnectField.front_addr, *addrAscii);
 	szPath->WriteOneByte((uint8_t*)pConnectField.szPath);
 
-	//strcpy(pConnectField.szPath, ((std::string)*pathAscii).c_str());  
 	logger_cout(log.append(" ").append(pConnectField.front_addr).append("|").append(pConnectField.szPath).append("|").c_str());
 	obj->uvMdUser->Connect(&pConnectField, FunRtnCallback, uuid);
 }
@@ -123,22 +117,9 @@ FUNCTIONCALLBACK(WrapMdUser::ReqUserLogin)
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
 
-	//Local<String> broker = args[0]->ToString();
-	//Local<String> userId = args[1]->ToString();
-	//Local<String> pwd = args[2]->ToString();
-	//String::AsciiValue brokerAscii(broker);
-	//String::AsciiValue userIdAscii(userId);
-	//String::AsciiValue pwdAscii(pwd);
-
 	CThostFtdcReqUserLoginField req;
 	memset(&req, 0, sizeof(req));
 	ArgsToObject(args, req.BrokerID, req.UserID, req.Password);
-	//strcpy(req.BrokerID, ((std::string)*brokerAscii).c_str());
-	//strcpy(req.UserID, ((std::string)*userIdAscii).c_str());
-	//strcpy(req.Password, ((std::string)*pwdAscii).c_str());
-	//broker->WriteOneByte((uint8_t*)req.BrokerID);
-	//userId->WriteOneByte((uint8_t*)req.UserID);
-	//pwd->WriteOneByte((uint8_t*)req.Password);
 	logger_cout(log.append(" ").append(req.BrokerID).append("|").append(req.UserID).append("|").append(req.Password).c_str());
 	obj->uvMdUser->ReqUserLogin(&req, FunRtnCallback, uuid);
 }
@@ -159,17 +140,9 @@ FUNCTIONCALLBACK(WrapMdUser::ReqUserLogout)
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
-
-	//Local<String> broker = args[0]->ToString();
-	//Local<String> userId = args[1]->ToString();
-	//String::AsciiValue brokerAscii(broker);
-	//String::AsciiValue userIdAscii(userId);
-
 	CThostFtdcUserLogoutField req;
 	memset(&req, 0, sizeof(req));
 	ArgsToObject(args, req.BrokerID, req.UserID);
-	//strcpy(req.BrokerID, ((std::string)*brokerAscii).c_str());
-	//strcpy(req.UserID, ((std::string)*userIdAscii).c_str());
 	logger_cout(log.append(" ").append(req.BrokerID).append("|").append(req.UserID).c_str());
 	obj->uvMdUser->ReqUserLogout(&req, FunRtnCallback, uuid);
 }
@@ -195,9 +168,7 @@ FUNCTIONCALLBACK(WrapMdUser::SubscribeMarketData)
 	
 	for (uint32_t i = 0; i < instrumentIDs->Length(); i++) {
 		Local<String> instrumentId = instrumentIDs->Get(i)->ToString();
-		/*String::AsciiValue idAscii(instrumentId);  		 */
 		char* id = new char[instrumentId->Length() + 1];
-		//strcpy(id, *idAscii);
 		instrumentId->WriteOneByte((uint8_t*)id);
 		idArray[i] = id;
 		log.append(id).append("|");
@@ -228,9 +199,7 @@ FUNCTIONCALLBACK(WrapMdUser::UnSubscribeMarketData)
 
 	for (uint32_t i = 0; i < instrumentIDs->Length(); i++) {
 		Local<String> instrumentId = instrumentIDs->Get(i)->ToString();
-		//String::AsciiValue idAscii(instrumentId);
 		char* id = new char[instrumentId->Length() + 1];
-		//strcpy(id, *idAscii);
 		idArray[i] = id;
 		instrumentId->WriteOneByte((uint8_t*)id);
 		log.append(id).append("|");

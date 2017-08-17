@@ -1,0 +1,10 @@
+*.log
+build/!(profiler)
+node_modules
+test
+.gitattributes
+.gitignore
+.npmignore
+*.dll
+tools
+conn

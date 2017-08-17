@@ -46,8 +46,7 @@ mduser.on('rspError', function (requestId, isLast, info) {
 
 });
 
-mduser.connect('tcp://180.168.146.187:10010', undefined, function (f) {
+mduser.connect('tcp://180.168.146.187:10010', 'conn/tmp', function (f) {
 
     console.log(f);
 });
-

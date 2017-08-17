@@ -43,8 +43,7 @@ void CreateCObject(const FunctionCallbackInfo<Value>& args)
 	Isolate* isolate = args.GetIsolate();
 	if (args.IsConstructCall())
 	{
-		T * cobject = new T(args);
-
+		new T(args);
 		args.GetReturnValue().Set(args.This());
 	}
 	else
@@ -83,8 +82,14 @@ public:
 		target->Set(className, tpl->GetFunction());
 	}
 };
-#define DECL_CONSTR(name) typedef Constructor<name> name##Constructor;\
-Persistent<Function> Constructor<name>::constructor;
+template<typename T>
+Persistent<Function> Constructor<T>::constructor;
+#define DECL_CONSTR(TYPE)                 \
+template<> Persistent<Function> Constructor<TYPE>::constructor;  \
+template class Constructor<TYPE>;
+
+//#define DECL_CONSTR(name) typedef Constructor<name> name##Constructor;\
+//Persistent<Function> Constructor<name>::constructor;
 #define NEW_CONSTR(classname) Constructor<classname> _##classname(target, #classname)
 
 #define FUNCTIONCALLBACK(name) void name(const FunctionCallbackInfo<Value>& args) {SCOPE(args)

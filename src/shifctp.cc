@@ -8,14 +8,6 @@ using namespace v8;
 
 bool islog;//log?
 
-//Handle<Value> CreateTrader(const FunctionCallbackInfo<Value>& args) {
-//  return WrapTrader::NewInstance(args);
-//}
-
-//Handle<Value> CreateMdUser(const FunctionCallbackInfo<Value>& args) {
-//	return WrapMdUser::NewInstance(args);
-//}
-
 void Settings(const FunctionCallbackInfo<Value>& args) {
 	SCOPE(args)
 	if (!args[0]->IsUndefined() && args[0]->IsObject()) {

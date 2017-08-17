@@ -1,6 +1,6 @@
 {
   "name": "node-ctp",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "description": "Futures CTP API wraped by node.js",
   "main": "index.js",
   "gypfile": true,
@@ -27,6 +27,6 @@
     "preinstall": "node -e 'process.exit(0)'",
     "install": "node-pre-gyp install --fallback-to-build",
     "rebuild": "node-pre-gyp rebuild",
-    "publish": "node ./tools/release.js"
+    "release": "node ./tools/release.js"
   }
 }

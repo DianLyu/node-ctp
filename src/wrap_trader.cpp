@@ -9,6 +9,7 @@ std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > WrapTra
 
 WrapTrader::WrapTrader(const FunctionCallbackInfo<Value>& args) {
 	logger_cout("wrap_trader------>object start init");
+	this->Wrap(args.This());
 	uvTrader = new uv_trader();	
 	logger_cout("wrap_trader------>object init successed");
 }
@@ -19,8 +20,7 @@ WrapTrader::~WrapTrader(void) {
     }
 	logger_cout("wrap_trader------>object destroyed");
 }
-template<>
-Persistent<Function> Constructor<WrapTrader>::constructor;
+DECL_CONSTR(WrapTrader)
 void WrapTrader::Init(Handle<Object> target) {
 	NEW_CONSTR(WrapTrader);
 	initEventMap();
