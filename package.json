@@ -1,19 +1,32 @@
 {
-  "name": "shifctp",
-  "version": "0.0.0",
+  "name": "node-ctp",
+  "version": "0.0.9",
   "description": "Futures CTP API wraped by node.js",
-  "main": "main.js",
-  "private": true,
+  "main": "index.js",
   "gypfile": true,
   "dependencies": {
-    "bindings": "^1.3.0",
     "node-pre-gyp": "^0.6.36"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/langhuihui/node-ctp.git"
+  },
+  "keywords": [
+    "nodejs",
+    "ctp"
+  ],
+  "author": "dexter",
   "binary": {
-    "module_name": "shifctp",
+    "module_name": "node-ctp",
     "module_path": "./build/{module_name}/v{version}/{node_abi}-{platform}-{arch}/",
     "remote_path": "./{module_name}/v{version}/",
     "package_name": "{node_abi}-{platform}-{arch}.tar.gz",
     "host": "https://node-inspector.s3.amazonaws.com/"
+  },
+  "scripts": {
+    "preinstall": "node -e 'process.exit(0)'",
+    "install": "node-pre-gyp install --fallback-to-build",
+    "rebuild": "node-pre-gyp rebuild",
+    "publish": "node ./tools/release.js"
   }
 }
