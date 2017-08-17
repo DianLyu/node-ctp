@@ -6,6 +6,14 @@
   "private": true,
   "gypfile": true,
   "dependencies": {
-    "bindings": "^1.3.0"
+    "bindings": "^1.3.0",
+    "node-pre-gyp": "^0.6.36"
+  },
+  "binary": {
+    "module_name": "shifctp",
+    "module_path": "./build/{module_name}/v{version}/{node_abi}-{platform}-{arch}/",
+    "remote_path": "./{module_name}/v{version}/",
+    "package_name": "{node_abi}-{platform}-{arch}.tar.gz",
+    "host": "https://node-inspector.s3.amazonaws.com/"
   }
 }

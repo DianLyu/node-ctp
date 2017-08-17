@@ -1,6 +1,14 @@
-var ctp = require('bindings')('shifctp');
+var pack = require('./package.json');
+var ctp =  require('./' + [
+    'build',
+    'shifctp',
+    'v' + pack.version,
+    ['node', 'v' + process.versions.modules, process.platform, process.arch].join('-'),
+    'shifctp.node'
+  ].join('/'));
 ctp.settings({ log: true});
 var mduser = ctp.createMdUser();
+
 mduser.on("connect",function(result){
     console.log("on connected");
     mduser.reqUserLogin('046798','dexger','9999',function(result){
@@ -16,9 +24,9 @@ mduser.on("rspUserLogin", function (requestId, isLast, field, info) {
 });
 
 mduser.on('rspSubMarketData', function (requestId, isLast, field, info) {
-
-    console.log("rspSubMarketData");
-});
+    
+        console.log("rspSubMarketData");
+    });
 
 mduser.on('rspUnSubMarketData', function (requestId, isLast, field, info) {
     
@@ -42,3 +50,4 @@ mduser.connect('tcp://180.168.146.187:10010', undefined, function (f) {
 
     console.log(f);
 });
+

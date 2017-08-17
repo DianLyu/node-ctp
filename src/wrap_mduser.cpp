@@ -18,6 +18,7 @@ WrapMdUser::~WrapMdUser() {
     }
 	logger_cout("wrape_mduser------>object destroyed");
 }
+template<>
 Persistent<Function> Constructor<WrapMdUser>::constructor;
 void WrapMdUser::Init(Handle<Object> target) {
 	NEW_CONSTR(WrapMdUser);
@@ -29,7 +30,7 @@ void WrapMdUser::Init(Handle<Object> target) {
 	_WrapMdUser.SetProtoTypeMethod("subscribeMarketData", SubscribeMarketData);
 	_WrapMdUser.SetProtoTypeMethod("unSubscribeMarketData", UnSubscribeMarketData);
 	_WrapMdUser.SetProtoTypeMethod("disconnect", Disposed);
-	NODE_SET_METHOD(target, "createTrader", CreateCObject<WrapMdUser>);
+	NODE_SET_METHOD(target, "createMdUser", CreateCObject<WrapMdUser>);
 }
 
 void WrapMdUser::initEventMap() {
@@ -55,7 +56,8 @@ FUNCTIONCALLBACK(WrapMdUser::On)
 	Local<Function> cb = Local<Function>::Cast(args[1]);
 	//String::AsciiValue eNameAscii(eventName);
 	String::Utf8Value eNameAscii(eventName);
-	std::map<const char*, int>::iterator eIt = event_map.find(*eNameAscii);
+	
+	auto eIt = event_map.find(*eNameAscii);
 	if (eIt == event_map.end()) {
 		isolate->ThrowException(Exception::TypeError(GETLOCAL("System has no register this event")));
 		return;

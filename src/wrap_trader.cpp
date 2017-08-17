@@ -19,6 +19,7 @@ WrapTrader::~WrapTrader(void) {
     }
 	logger_cout("wrap_trader------>object destroyed");
 }
+template<>
 Persistent<Function> Constructor<WrapTrader>::constructor;
 void WrapTrader::Init(Handle<Object> target) {
 	NEW_CONSTR(WrapTrader);
@@ -39,7 +40,7 @@ void WrapTrader::Init(Handle<Object> target) {
 	_WrapTrader.SetProtoTypeMethod("reqQrySettlementInfo", ReqQrySettlementInfo);
 	_WrapTrader.SetProtoTypeMethod("disconnect", Disposed);
 	_WrapTrader.SetProtoTypeMethod("getTradingDay", GetTradingDay);
-	NODE_SET_METHOD(target, "createMdUser", CreateCObject<WrapTrader>);
+	NODE_SET_METHOD(target, "createTrader", CreateCObject<WrapTrader>);
 }
 
 void WrapTrader::initEventMap() {

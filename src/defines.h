@@ -3,17 +3,40 @@
 using namespace v8;
 #define CONVERT2LOCAL(type,type2) Local<type2> Convert2Local(Isolate* isolate, type value) 
 
-extern  CONVERT2LOCAL(int, Number);
-extern  CONVERT2LOCAL(double, Number);
-extern  CONVERT2LOCAL(char, String);
-extern  Local<String> Convert2Local(Isolate* isolate, const char value[]);
-extern  CONVERT2LOCAL(bool, Boolean);
+inline CONVERT2LOCAL(int, Number)
+{
+	return Int32::New(isolate, value);
+}
+inline CONVERT2LOCAL(double, Number)
+{
+	return Number::New(isolate, value);
+}
+inline CONVERT2LOCAL(char, String)
+{
+	char t[2] = { value,0 };
+	return String::NewFromOneByte(isolate, (uint8_t*)t);
+}
+inline Local<String> Convert2Local(Isolate* isolate, const char value[])
+{
+	//std::codecvt_utf8<char>
+	//wchar_t wstring[sizeof(value)];
+	//mbstowcs(wstring, value, sizeof(value));
+	//return String::NewFromTwoByte(isolate,(const uint16_t*) wstring);
+	return String::NewFromOneByte(isolate, (uint8_t*)value);
+	//return String::NewFromUtf8(isolate, value);
+}
+inline CONVERT2LOCAL(bool, Boolean)
+{
+	return Boolean::New(isolate, value);
+}
 #define GETLOCAL(x) Convert2Local(isolate,x)
 #define CONVERT2LOCALOBJECT(type,...)  CONVERT2LOCAL(type,Object){\
 auto result = Object::New(isolate);\
 __VA_ARGS__ \
 return result;\
 };
+template<typename T>
+struct Constructor;
 template<typename T>
 void CreateCObject(const FunctionCallbackInfo<Value>& args)
 {
@@ -65,11 +88,12 @@ Persistent<Function> Constructor<name>::constructor;
 #define NEW_CONSTR(classname) Constructor<classname> _##classname(target, #classname)
 
 #define FUNCTIONCALLBACK(name) void name(const FunctionCallbackInfo<Value>& args) {SCOPE(args)
-extern inline void ArgsToObject(const FunctionCallbackInfo<Value>& args, int index);
-extern inline void _ArgsToObject(const FunctionCallbackInfo<Value>& args, int index, char value[]);
+inline void ArgsToObject(const FunctionCallbackInfo<Value>& args, int index){
+
+}
 template<typename T, typename ...Args>
 inline void ArgsToObject(const FunctionCallbackInfo<Value>& args, int index, T& value, Args&... _args) {
-	_ArgsToObject(args, index, value);
+	args[index]->ToString()->WriteOneByte((uint8_t*)value);
 	ArgsToObject(args, index + 1, _args...);
 }
 template<typename ...Args>
@@ -83,9 +107,8 @@ inline void SetObjectProperty(Local<Object> object, Isolate* isolate, const char
 	object->Set(String::NewFromUtf8(isolate, key), Convert2Local(isolate, value));
 }
 template<class M>
-inline void AddToMap(M &m, int k, Local<Function> &f) {
+inline void AddToMap(M &m, int k,const Local<Function> &f) {
 	m.emplace(std::make_pair(k, Persistent<Function, CopyablePersistentTraits<Function>>(f->GetIsolate(), f)));
-	
 }
 
 
