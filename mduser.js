@@ -1,10 +1,10 @@
 var pack = require('./package.json');
 var ctp =  require('./' + [
     'build',
-    'shifctp',
+    'node-ctp',
     'v' + pack.version,
     ['node', 'v' + process.versions.modules, process.platform, process.arch].join('-'),
-    'shifctp.node'
+    'node-ctp.node'
   ].join('/'));
 ctp.settings({ log: true});
 var mduser = ctp.createMdUser();

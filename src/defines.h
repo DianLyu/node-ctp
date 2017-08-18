@@ -84,12 +84,12 @@ public:
 };
 template<typename T>
 Persistent<Function> Constructor<T>::constructor;
-#define DECL_CONSTR(TYPE)                 \
+//#define DECL_CONSTR(TYPE)                 \
 template<> Persistent<Function> Constructor<TYPE>::constructor;  \
 template class Constructor<TYPE>;
 
-//#define DECL_CONSTR(name) typedef Constructor<name> name##Constructor;\
-//Persistent<Function> Constructor<name>::constructor;
+#define DECL_CONSTR(name) typedef Constructor<name> name##Constructor;\
+Persistent<Function> name##Constructor::constructor;
 #define NEW_CONSTR(classname) Constructor<classname> _##classname(target, #classname)
 
 #define FUNCTIONCALLBACK(name) void name(const FunctionCallbackInfo<Value>& args) {SCOPE(args)
