@@ -32,6 +32,7 @@ public:
 	static void UnSubscribeMarketData(const FunctionCallbackInfo<Value>& args);
 	static void Disposed(const FunctionCallbackInfo<Value>& args);
 	static void Init(Handle<Object> args);
+	static Persistent<Function> constructor;
 private:
 	static void initEventMap();
 	static void pkg_cb_userlogin(CbRtnField* data, Local<Value>*cbArray);

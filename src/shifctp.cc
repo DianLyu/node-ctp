@@ -18,11 +18,9 @@ void Settings(const FunctionCallbackInfo<Value>& args) {
 		}
 	}
 }
-
 void Init(Handle<Object> exports, v8::Local<v8::Value> module, void* priv) {
 	WrapTrader::Init(exports);
 	WrapMdUser::Init(exports);
 	NODE_SET_METHOD(exports, "settings", Settings);
 }
-
 NODE_MODULE(shifctp, Init)

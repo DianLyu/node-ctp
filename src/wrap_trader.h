@@ -59,7 +59,7 @@ public:
 	//对象初始化
 	static void Init(Handle<Object> args);
     static void GetTradingDay(const FunctionCallbackInfo<Value>& args);
-
+	static Persistent<Function> constructor;
 private:
 	static void initEventMap();	
 	static void pkg_cb_userlogin(CbRtnField* data, Local<Value>*cbArray);
@@ -86,7 +86,7 @@ private:
 	static int s_uuid;
 	static void FunCallback(CbRtnField *data);
 	static void FunRtnCallback(int result, void* baton);
-	//static Persistent<Function> constructor;
+	
 	static std::map<const char*, int,ptrCmp> event_map;
 	static std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > callback_map;
 	static std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > fun_rtncb_map;

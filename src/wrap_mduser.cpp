@@ -19,7 +19,7 @@ WrapMdUser::~WrapMdUser() {
     }
 	logger_cout("wrape_mduser------>object destroyed");
 }
-DECL_CONSTR(WrapMdUser)
+Persistent<Function> WrapMdUser::constructor;
 void WrapMdUser::Init(Handle<Object> target) {
 	NEW_CONSTR(WrapMdUser);
 	initEventMap();

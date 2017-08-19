@@ -49,7 +49,7 @@ void CreateCObject(const FunctionCallbackInfo<Value>& args)
 	else
 	{
 		Local<Context> context = isolate->GetCurrentContext();
-		Local<Function> cons = Constructor<T>::constructor.Get(isolate);
+		Local<Function> cons = T::constructor.Get(isolate);
 		int argc = args.Length();
 		Local<Value> *_args = argc>0 ? (Local<Value> *)malloc(sizeof(Local<Value>)*argc) : nullptr;
 		for (int i = 0; i < argc; ++i)_args[i] = args[i];
@@ -58,11 +58,12 @@ void CreateCObject(const FunctionCallbackInfo<Value>& args)
 		args.GetReturnValue().Set(result);
 	}
 };
+typedef Persistent<Function> PFunction;
 template<typename T>
 struct Constructor
 {
 public:
-	static Persistent<Function> constructor;
+	//static PFunction constructor;
 	Local<FunctionTemplate> tpl;
 	Local<String> className;
 	Isolate* isolate;
@@ -78,18 +79,16 @@ public:
 		NODE_SET_PROTOTYPE_METHOD(tpl, name, callback);
 	}
 	~Constructor() {
-		constructor.Reset(isolate, tpl->GetFunction());
+		T::constructor.Reset(isolate, tpl->GetFunction());
 		target->Set(className, tpl->GetFunction());
 	}
 };
-template<typename T>
-Persistent<Function> Constructor<T>::constructor;
 //#define DECL_CONSTR(TYPE)                 \
 template<> Persistent<Function> Constructor<TYPE>::constructor;  \
 template class Constructor<TYPE>;
 
-#define DECL_CONSTR(name) typedef Constructor<name> name##Constructor;\
-Persistent<Function> name##Constructor::constructor;
+#define DECL_CONSTR(name) template<> PFunction Constructor<name>::constructor;
+
 #define NEW_CONSTR(classname) Constructor<classname> _##classname(target, #classname)
 
 #define FUNCTIONCALLBACK(name) void name(const FunctionCallbackInfo<Value>& args) {SCOPE(args)

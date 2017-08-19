@@ -20,7 +20,7 @@ WrapTrader::~WrapTrader(void) {
     }
 	logger_cout("wrap_trader------>object destroyed");
 }
-DECL_CONSTR(WrapTrader)
+Persistent<Function> WrapTrader::constructor;
 void WrapTrader::Init(Handle<Object> target) {
 	NEW_CONSTR(WrapTrader);
 	initEventMap();

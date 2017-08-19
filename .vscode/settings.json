@@ -6,6 +6,7 @@
         "xtree": "cpp",
         "xutility": "cpp",
         "system_error": "cpp",
-        "xlocnum": "cpp"
+        "xlocnum": "cpp",
+        "map": "cpp"
     }
 }
