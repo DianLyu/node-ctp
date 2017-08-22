@@ -3,9 +3,9 @@
 #include "ThostFtdcMdApi.h"
 #include "ThostFtdcUserApiDataType.h"
 
-std::map<int, CbWrap*> uv_mduser::cb_map;
+std::map<int, CbWrap<WrapMdUser>*> uv_mduser::cb_map;
 
-uv_mduser::uv_mduser(void) {
+uv_mduser::uv_mduser(WrapMdUser* owner):m_owner(owner){
 	iRequestID = 0;
 	m_pApi = NULL;
     uv_async_init(uv_default_loop(),&async_t,NULL);//靠Node靠
@@ -19,7 +19,7 @@ void uv_mduser::Disposed() {
 	m_pApi->RegisterSpi(NULL);
 	m_pApi->Release();
 	m_pApi = NULL;
-	std::map<int, CbWrap*>::iterator callback_it = cb_map.begin();
+	std::map<int, CbWrap<WrapMdUser>*>::iterator callback_it = cb_map.begin();
 	while (callback_it != cb_map.end()) {
 		delete callback_it->second;
 		callback_it++;
@@ -28,40 +28,41 @@ void uv_mduser::Disposed() {
 	logger_cout("uv_mduser Disposed------>object destroyed");
 }
 
-int uv_mduser::On(const char* eName,int cb_type, void(*callback)(CbRtnField* cbResult)) {
+int uv_mduser::On(const char* eName,int cb_type, uvmd_callback callback) {
 	std::string log = "uv_mduser On------>";
-	std::map<int, CbWrap*>::iterator it = cb_map.find(cb_type);
+	std::map<int, CbWrap<WrapMdUser>*>::iterator it = cb_map.find(cb_type);
 	if (it != cb_map.end()) {
 		logger_cout(log.append(" event id").append(to_string(cb_type)).append(" register repeat").c_str());
 		return 1;//Callback is defined before
 	}
 
-	CbWrap* cb_wrap = new CbWrap();//析构函数中需要销毁
+	CbWrap<WrapMdUser>* cb_wrap = new CbWrap<WrapMdUser>();//析构函数中需要销毁
+	cb_wrap->owner = this->m_owner;
 	cb_wrap->callback = callback;
 	cb_map[cb_type] = cb_wrap;
 	logger_cout(log.append(" Event:").append(eName).append(" ID:").append(to_string(cb_type)).append(" register").c_str());
 	return 0;
 }
 
-void uv_mduser::Connect(UVConnectField* pConnectField, void(*callback)(int, void*), int uuid) {
+void uv_mduser::Connect(UVConnectField* pConnectField, uv_rtcallback callback, int uuid) {
 	UVConnectField* _pConnectField = new UVConnectField();
 	memcpy(_pConnectField, pConnectField, sizeof(UVConnectField));
 	this->invoke(_pConnectField, 0, T_CONNECT_RE, callback, uuid);//pConnectField函数外部销毁
 }
 
-void uv_mduser::ReqUserLogin(CThostFtdcReqUserLoginField *pReqUserLoginField, void(*callback)(int, void*), int uuid) {
+void uv_mduser::ReqUserLogin(CThostFtdcReqUserLoginField *pReqUserLoginField, uv_rtcallback callback, int uuid) {
 	CThostFtdcReqUserLoginField *_pReqUserLoginField = new CThostFtdcReqUserLoginField();
 	memcpy(_pReqUserLoginField, pReqUserLoginField, sizeof(CThostFtdcReqUserLoginField));
 	this->invoke(_pReqUserLoginField,0, T_LOGIN_RE, callback, uuid);
 }
 
-void uv_mduser::ReqUserLogout(CThostFtdcUserLogoutField *pUserLogout, void(*callback)(int, void*), int uuid) {
+void uv_mduser::ReqUserLogout(CThostFtdcUserLogoutField *pUserLogout, uv_rtcallback callback, int uuid) {
 	CThostFtdcUserLogoutField* _pUserLogout = new CThostFtdcUserLogoutField();
 	memcpy(_pUserLogout, pUserLogout, sizeof(CThostFtdcUserLogoutField));
 	this->invoke(_pUserLogout, 0, T_LOGOUT_RE, callback, uuid);
 }
 
-void uv_mduser::SubscribeMarketData(char *ppInstrumentID[], int nCount, void(*callback)(int, void*), int uuid) {
+void uv_mduser::SubscribeMarketData(char *ppInstrumentID[], int nCount, uv_rtcallback callback, int uuid) {
 	char **_ppInstrumentID = new char*[nCount];
 	for (int i = 0; i < nCount; i++) {
 		memcpy(_ppInstrumentID + i, ppInstrumentID + i, sizeof(*(ppInstrumentID + i)));
@@ -69,7 +70,7 @@ void uv_mduser::SubscribeMarketData(char *ppInstrumentID[], int nCount, void(*ca
 	this->invoke(_ppInstrumentID, nCount, T_SUBSCRIBE_MARKET_DATA_RE, callback, uuid);
 }
 
-void uv_mduser::UnSubscribeMarketData(char *ppInstrumentID[], int nCount, void(*callback)(int, void*), int uuid) {
+void uv_mduser::UnSubscribeMarketData(char *ppInstrumentID[], int nCount, uv_rtcallback callback, int uuid) {
 	char **_ppInstrumentID = new char*[nCount];
 	for (int i = 0; i < nCount; i++) {
 		memcpy(_ppInstrumentID + i, ppInstrumentID + i, sizeof(*(ppInstrumentID + i)));
@@ -164,7 +165,7 @@ void uv_mduser::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarke
 
 ///uv_queue_work 异步调用方法
 void uv_mduser::_async(uv_work_t * work) {
-	LookupCtpApiBaton* baton = static_cast<LookupCtpApiBaton*>(work->data);
+	LookupCtpApiBaton<WrapMdUser>* baton = static_cast<LookupCtpApiBaton<WrapMdUser>*>(work->data);
 	uv_mduser* uv_mduser_obj = static_cast<uv_mduser*>(baton->uv_trader_obj);
 	std::string log = "uv_mduser _async------>,";
 	switch (baton->fun) {
@@ -212,11 +213,11 @@ void uv_mduser::_async(uv_work_t * work) {
 }
 ///uv_queue_work 方法完成回调
 void uv_mduser::_completed(uv_work_t * work, int) {
-	LookupCtpApiBaton* baton = static_cast<LookupCtpApiBaton*>(work->data);
-	baton->callback(baton->nResult, baton);
+	LookupCtpApiBaton<WrapMdUser>* baton = static_cast<LookupCtpApiBaton<WrapMdUser>*>(work->data);
+	baton->call(((uv_mduser*)(baton->uv_trader_obj))->m_owner);
 	if (baton->fun == T_SUBSCRIBE_MARKET_DATA_RE || baton->fun == T_UNSUBSCRIBE_MARKET_DATA_RE) {
 		char** idArray = static_cast<char**>(baton->args);
-		for (int i = 0; i < baton->nCount; i++) { 		 
+		for (int i = 0; i < baton->nCount; i++) {
 			delete *(idArray + i);			 
 		}
 	}
@@ -230,9 +231,9 @@ void uv_mduser::_on_async(uv_work_t * work){
 
 void uv_mduser::_on_completed(uv_work_t * work,int){
 	CbRtnField* cbTrnField = static_cast<CbRtnField*>(work->data);
-	std::map<int, CbWrap*>::iterator it = cb_map.find(cbTrnField->eFlag);
+	std::map<int, CbWrap<WrapMdUser>*>::iterator it = cb_map.find(cbTrnField->eFlag);
 	if (it != cb_map.end()) {
-		cb_map[cbTrnField->eFlag]->callback(cbTrnField);
+		cb_map[cbTrnField->eFlag]->call(cbTrnField);
 	}
 	if (cbTrnField->rtnField)
 		delete cbTrnField->rtnField;
@@ -241,8 +242,8 @@ void uv_mduser::_on_completed(uv_work_t * work,int){
 	delete cbTrnField;
 }
 
-void uv_mduser::invoke(void* field, int count, int ret, void(*callback)(int, void*), int uuid) {
-	LookupCtpApiBaton* baton = new LookupCtpApiBaton();//完成函数中需要销毁
+void uv_mduser::invoke(void* field, int count, int ret, uv_rtcallback callback, int uuid) {
+	LookupCtpApiBaton<WrapMdUser>* baton = new LookupCtpApiBaton<WrapMdUser>();//完成函数中需要销毁
 	baton->work.data = baton;
 	baton->uv_trader_obj = this;
 	baton->callback = callback;

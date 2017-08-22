@@ -2,14 +2,31 @@
 #include "wrap_mduser.h"
 #include "defines.h"
 
-int WrapMdUser::s_uuid;
 std::map<const char*, int,ptrCmp> WrapMdUser::event_map;
-std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > WrapMdUser::callback_map;
-std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > WrapMdUser::fun_rtncb_map;
+
 WrapMdUser::WrapMdUser(const FunctionCallbackInfo<Value>& args) {
 	logger_cout("wrap_mduser------>object start init");
 	this->Wrap(args.This());
-	uvMdUser = new uv_mduser();
+	uvMdUser = new uv_mduser(this);
+	if(args.Length()>0){
+		auto opt = Local<Object>::Cast(args[0]);
+		auto names = opt->GetOwnPropertyNames();
+		auto len = names->Length();
+		for (auto i = 0;i < len;i++) {
+			Local<String> eventName = names->Get(i)->ToString();
+			Local<Function> cb = Local<Function>::Cast(opt->Get(eventName));
+		
+			String::Utf8Value eNameAscii(eventName);
+			auto eIt = event_map.find(*eNameAscii);
+			if (eIt == event_map.end()) {
+				continue;
+			}
+			else {
+				AddToMap(callback_map, eIt->second, cb);
+				uvMdUser->On(*eNameAscii, eIt->second, &WrapMdUser::FunCallback);
+			}
+		}
+	}
 	logger_cout("wrap_mduser------>object init successed");
 }
 
@@ -61,15 +78,15 @@ FUNCTIONCALLBACK(WrapMdUser::On)
 		isolate->ThrowException(Exception::TypeError(GETLOCAL("System has no register this event")));
 		return;
 	}
-	auto cIt = callback_map.find(eIt->second);
-	if (cIt != callback_map.end()) {
+	auto cIt = obj->callback_map.find(eIt->second);
+	if (cIt != obj->callback_map.end()) {
 		logger_cout("Callback is defined before");
 		isolate->ThrowException(Exception::TypeError(GETLOCAL("Callback is defined before")));
 		args.GetReturnValue().SetUndefined();
 		return;
 	}
-	AddToMap(callback_map, eIt->second, cb);
-	obj->uvMdUser->On(*eNameAscii,eIt->second, FunCallback);
+	AddToMap(obj->callback_map, eIt->second, cb);
+	obj->uvMdUser->On(*eNameAscii,eIt->second, &WrapMdUser::FunCallback);
 	args.GetReturnValue().Set(Int32::New(isolate, 0));
 }
 FUNCTIONCALLBACK(WrapMdUser::Connect)
@@ -82,8 +99,8 @@ FUNCTIONCALLBACK(WrapMdUser::Connect)
 	int uuid = -1;
 	WrapMdUser* obj = ObjectWrap::Unwrap<WrapMdUser>(args.This());
 	if (!args[2]->IsUndefined() && args[2]->IsFunction()) {
-		uuid = ++s_uuid;
-		AddToMap(fun_rtncb_map, uuid, Local<Function>::Cast(args[2]));
+		uuid = ++obj->s_uuid;
+		AddToMap(obj->fun_rtncb_map, uuid, Local<Function>::Cast(args[2]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -97,7 +114,7 @@ FUNCTIONCALLBACK(WrapMdUser::Connect)
 	szPath->WriteOneByte((uint8_t*)pConnectField.szPath);
 
 	logger_cout(log.append(" ").append(pConnectField.front_addr).append("|").append(pConnectField.szPath).append("|").c_str());
-	obj->uvMdUser->Connect(&pConnectField, FunRtnCallback, uuid);
+	obj->uvMdUser->Connect(&pConnectField, &WrapMdUser::FunRtnCallback, uuid);
 }
 FUNCTIONCALLBACK(WrapMdUser::ReqUserLogin)
 	std::string log = "wrap_mduser ReqUserLogin------>";
@@ -111,8 +128,8 @@ FUNCTIONCALLBACK(WrapMdUser::ReqUserLogin)
 	int uuid = -1;
 	WrapMdUser* obj = ObjectWrap::Unwrap<WrapMdUser>(args.This());
 	if (!args[3]->IsUndefined() && args[3]->IsFunction()) {
-		uuid = ++s_uuid;
-		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[3]));
+		uuid = ++obj->s_uuid;
+		AddToMap(obj->fun_rtncb_map,uuid,Local<Function>::Cast(args[3]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -121,7 +138,7 @@ FUNCTIONCALLBACK(WrapMdUser::ReqUserLogin)
 	memset(&req, 0, sizeof(req));
 	ArgsToObject(args, req.BrokerID, req.UserID, req.Password);
 	logger_cout(log.append(" ").append(req.BrokerID).append("|").append(req.UserID).append("|").append(req.Password).c_str());
-	obj->uvMdUser->ReqUserLogin(&req, FunRtnCallback, uuid);
+	obj->uvMdUser->ReqUserLogin(&req, &WrapMdUser::FunRtnCallback, uuid);
 }
 FUNCTIONCALLBACK(WrapMdUser::ReqUserLogout)
 	std::string log = "wrap_mduser ReqUserLogout------>";
@@ -135,8 +152,8 @@ FUNCTIONCALLBACK(WrapMdUser::ReqUserLogout)
 	int uuid = -1;
 	WrapMdUser* obj = ObjectWrap::Unwrap<WrapMdUser>(args.This());
 	if (!args[2]->IsUndefined() && args[2]->IsFunction()) {
-		uuid = ++s_uuid;
-		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[2]));
+		uuid = ++obj->s_uuid;
+		AddToMap(obj->fun_rtncb_map,uuid,Local<Function>::Cast(args[2]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -144,7 +161,7 @@ FUNCTIONCALLBACK(WrapMdUser::ReqUserLogout)
 	memset(&req, 0, sizeof(req));
 	ArgsToObject(args, req.BrokerID, req.UserID);
 	logger_cout(log.append(" ").append(req.BrokerID).append("|").append(req.UserID).c_str());
-	obj->uvMdUser->ReqUserLogout(&req, FunRtnCallback, uuid);
+	obj->uvMdUser->ReqUserLogout(&req, &WrapMdUser::FunRtnCallback, uuid);
 }
 FUNCTIONCALLBACK(WrapMdUser::SubscribeMarketData)
 	std::string log = "wrap_mduser SubscribeMarketData------>";
@@ -158,8 +175,8 @@ FUNCTIONCALLBACK(WrapMdUser::SubscribeMarketData)
 	int uuid = -1;
 	WrapMdUser* obj = ObjectWrap::Unwrap<WrapMdUser>(args.This());
 	if (!args[1]->IsUndefined() && args[1]->IsFunction()) {
-		uuid = ++s_uuid;
-		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[1]));
+		uuid = ++obj->s_uuid;
+		AddToMap(obj->fun_rtncb_map,uuid,Local<Function>::Cast(args[1]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	} 
@@ -174,7 +191,7 @@ FUNCTIONCALLBACK(WrapMdUser::SubscribeMarketData)
 		log.append(id).append("|");
 	}
 	logger_cout(log.c_str());
-	obj->uvMdUser->SubscribeMarketData(idArray, instrumentIDs->Length(), FunRtnCallback, uuid);
+	obj->uvMdUser->SubscribeMarketData(idArray, instrumentIDs->Length(), &WrapMdUser::FunRtnCallback, uuid);
 	delete idArray;
 }
 FUNCTIONCALLBACK(WrapMdUser::UnSubscribeMarketData)
@@ -189,8 +206,8 @@ FUNCTIONCALLBACK(WrapMdUser::UnSubscribeMarketData)
 	int uuid = -1;
 	WrapMdUser* obj = ObjectWrap::Unwrap<WrapMdUser>(args.This());
 	if (!args[1]->IsUndefined() && args[1]->IsFunction()) {
-		uuid = ++s_uuid;
-		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[1]));
+		uuid = ++obj->s_uuid;
+		AddToMap(obj->fun_rtncb_map,uuid,Local<Function>::Cast(args[1]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -205,20 +222,20 @@ FUNCTIONCALLBACK(WrapMdUser::UnSubscribeMarketData)
 		log.append(id).append("|");
 	}
 	logger_cout(log.c_str());
-	obj->uvMdUser->UnSubscribeMarketData(idArray, instrumentIDs->Length(), FunRtnCallback, uuid);
+	obj->uvMdUser->UnSubscribeMarketData(idArray, instrumentIDs->Length(), &WrapMdUser::FunRtnCallback, uuid);
 }
 FUNCTIONCALLBACK(WrapMdUser::Disposed)
 	WrapMdUser* obj = ObjectWrap::Unwrap<WrapMdUser>(args.This());
 obj->uvMdUser->Disposed();
 
-	auto callback_it = callback_map.begin();
-	while (callback_it != callback_map.end()) {
+	auto callback_it = obj->callback_map.begin();
+	while (callback_it != obj->callback_map.end()) {
 		callback_it->second.Reset();
 		callback_it++;
 	}
 	event_map.clear();
-	callback_map.clear();
-	fun_rtncb_map.clear();
+	obj->callback_map.clear();
+	obj->fun_rtncb_map.clear();
 	delete obj->uvMdUser;
     obj->uvMdUser = NULL;
 	logger_cout("wrap_mduser Disposed------>wrap disposed");
@@ -228,15 +245,14 @@ obj->uvMdUser->Disposed();
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 void WrapMdUser::FunCallback(CbRtnField *data) {
-	Isolate *isolate = Isolate::GetCurrent();
-	HandleScope scope(isolate);
+	CSCOPE
 	auto cIt = callback_map.find(data->eFlag);
 	if (cIt == callback_map.end())
 		return;
 #define FunCallback_Switch(type,count,...) case type:{\
  Local<Value> argv[count]\
 __VA_ARGS__\
- cIt->second.Get(isolate)->Call(isolate->GetCurrentContext()->Global(), count, argv);\
+ cIt->second.Get(isolate)->Call(handle(), count, argv);\
 break;\
 	}
 	switch (data->eFlag) {
@@ -252,13 +268,12 @@ break;\
 #undef FunCallback_Switch
 }
 void WrapMdUser::FunRtnCallback(int result, void* baton) {
-	Isolate *isolate = Isolate::GetCurrent();
-	HandleScope scope(isolate);
-	LookupCtpApiBaton* tmp = static_cast<LookupCtpApiBaton*>(baton);
+	CSCOPE
+	LookupCtpApiBaton<WrapMdUser>* tmp = static_cast<LookupCtpApiBaton<WrapMdUser>*>(baton);
 	if (tmp->uuid != -1) {
 		auto it = fun_rtncb_map.find(tmp->uuid);
 		Local<Value> argv[1] = {GETLOCAL(tmp->nResult) };
-		it->second.Get(isolate)->Call(isolate->GetCurrentContext()->Global(), 1, argv);
+		it->second.Get(isolate)->Call(handle(), 1, argv);
 		it->second.Reset();
 		fun_rtncb_map.erase(tmp->uuid);
 	}
@@ -352,8 +367,7 @@ void WrapMdUser::pkg_cb_unrspsubmarketdata(CbRtnField* data, Local<Value>*cbArra
 	return;
 }
 void WrapMdUser::pkg_cb_rtndepthmarketdata(CbRtnField* data, Local<Value>*cbArray) {
-	Isolate *isolate = Isolate::GetCurrent();
-	HandleScope scope(isolate);
+	CSCOPE
 	CThostFtdcDepthMarketDataField *pDepthMarketData = static_cast<CThostFtdcDepthMarketDataField*>(data->rtnField);
 	if (pDepthMarketData) {	   		
 		Local<Object> jsonRtn = Object::New(isolate);

@@ -62,35 +62,32 @@ public:
 	static Persistent<Function> constructor;
 private:
 	static void initEventMap();	
-	static void pkg_cb_userlogin(CbRtnField* data, Local<Value>*cbArray);
-	static void pkg_cb_userlogout(CbRtnField* data, Local<Value>*cbArray);
-	static void pkg_cb_confirm(CbRtnField* data, Local<Value>*cbArray);
-	static void pkg_cb_orderinsert(CbRtnField* data, Local<Value>*cbArray);
-	static void pkg_cb_errorderinsert(CbRtnField* data, Local<Value>*cbArray);
-	static void pkg_cb_orderaction(CbRtnField* data, Local<Value>*cbArray);
-	static void pkg_cb_errorderaction(CbRtnField* data, Local<Value>*cbArray);
-	static void pkg_cb_rspqryorder(CbRtnField* data, Local<Value>*cbArray);
-	static void pkg_cb_rtnorder(CbRtnField* data, Local<Value>*cbArray);
-	static void pkg_cb_rqtrade(CbRtnField* data, Local<Value>*cbArray);
-	static void pkg_cb_rtntrade(CbRtnField* data, Local<Value>*cbArray);
-	static void pkg_cb_rqinvestorposition(CbRtnField* data, Local<Value>*cbArray);
-	static void pkg_cb_rqinvestorpositiondetail(CbRtnField* data, Local<Value>*cbArray);
-	static void pkg_cb_rqtradingaccount(CbRtnField* data, Local<Value>*cbArray);
-	static void pkg_cb_rqinstrument(CbRtnField* data, Local<Value>*cbArray);
-	static void pkg_cb_rqdepthmarketdata(CbRtnField* data, Local<Value>*cbArray);
-	static void pkg_cb_rqsettlementinfo(CbRtnField* data, Local<Value>*cbArray);
-	static void pkg_cb_rsperror(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_userlogin(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_userlogout(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_confirm(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_orderinsert(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_errorderinsert(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_orderaction(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_errorderaction(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_rspqryorder(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_rtnorder(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_rqtrade(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_rtntrade(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_rqinvestorposition(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_rqinvestorpositiondetail(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_rqtradingaccount(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_rqinstrument(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_rqdepthmarketdata(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_rqsettlementinfo(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_rsperror(CbRtnField* data, Local<Value>*cbArray);
 
-	static Local<Value> pkg_rspinfo(void *vpRspInfo);
+	Local<Value> pkg_rspinfo(void *vpRspInfo);
 	uv_trader* uvTrader;
-	static int s_uuid;
-	static void FunCallback(CbRtnField *data);
-	static void FunRtnCallback(int result, void* baton);
-	
+	int s_uuid=0;
+	void FunCallback( CbRtnField *data);
+	void FunRtnCallback( int result, void* baton);
 	static std::map<const char*, int,ptrCmp> event_map;
-	static std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > callback_map;
-	static std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > fun_rtncb_map;
+	std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > callback_map;
+	std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > fun_rtncb_map;
 };
-
-
 #endif

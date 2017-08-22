@@ -7,6 +7,7 @@
         "xutility": "cpp",
         "system_error": "cpp",
         "xlocnum": "cpp",
-        "map": "cpp"
+        "map": "cpp",
+        "xmemory0": "cpp"
     }
 }

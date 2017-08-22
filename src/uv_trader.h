@@ -12,42 +12,44 @@
 #include <node.h>
 #include "wraper_struct.h"
 
+class WrapTrader;
 extern std::string to_string(int val);
 extern bool islog;
 void logger_cout(const char* content);
-
+typedef void (WrapTrader::*uvtrader_callback)(CbRtnField*);
+typedef void (WrapTrader::*uvtrader_rtcallback)(int, void*);
 class uv_trader :public CThostFtdcTraderSpi {
 public:
-	uv_trader(void);
+	uv_trader(WrapTrader*owner);
 	virtual ~uv_trader(void);
 	///注册事件
-	int On(const char* eName,int cb_type, void(*callback)(CbRtnField* cbResult));
+	int On(const char* eName,int cb_type, uvtrader_callback callback);
 	///连接前置机
-	void  Connect(UVConnectField* pConnectField, void(*callback)(int, void*),int uuid);
+	void  Connect(UVConnectField* pConnectField, uvtrader_rtcallback callback,int uuid);
 	///用户登录请求
-	void  ReqUserLogin(CThostFtdcReqUserLoginField *pReqUserLoginField, void(*callback)(int, void*),int uuid);
+	void  ReqUserLogin(CThostFtdcReqUserLoginField *pReqUserLoginField, uvtrader_rtcallback callback,int uuid);
 	///登出请求 
-	void  ReqUserLogout(CThostFtdcUserLogoutField *pUserLogout, void(*callback)(int, void*),int uuid);
+	void  ReqUserLogout(CThostFtdcUserLogoutField *pUserLogout, uvtrader_rtcallback callback,int uuid);
 	///投资者结算结果确认
-	void  ReqSettlementInfoConfirm(CThostFtdcSettlementInfoConfirmField *pSettlementInfoConfirm, void(*callback)(int, void*),int uuid);
+	void  ReqSettlementInfoConfirm(CThostFtdcSettlementInfoConfirmField *pSettlementInfoConfirm, uvtrader_rtcallback callback,int uuid);
 	///请求查询合约
-	void ReqQryInstrument(CThostFtdcQryInstrumentField *pQryInstrument, void(*callback)(int, void*),int uuid);
+	void ReqQryInstrument(CThostFtdcQryInstrumentField *pQryInstrument, uvtrader_rtcallback callback,int uuid);
 	///请求查询资金账户
-	void ReqQryTradingAccount(CThostFtdcQryTradingAccountField *pQryTradingAccount, void(*callback)(int, void*),int uuid);
+	void ReqQryTradingAccount(CThostFtdcQryTradingAccountField *pQryTradingAccount, uvtrader_rtcallback callback,int uuid);
 	///请求查询投资者持仓
-	void ReqQryInvestorPosition(CThostFtdcQryInvestorPositionField *pQryInvestorPosition, void(*callback)(int, void*),int uuid);
+	void ReqQryInvestorPosition(CThostFtdcQryInvestorPositionField *pQryInvestorPosition, uvtrader_rtcallback callback,int uuid);
 	///持仓明细
-	void ReqQryInvestorPositionDetail(CThostFtdcQryInvestorPositionDetailField *pQryInvestorPositionDetail, void(*callback)(int, void*),int uuid);
+	void ReqQryInvestorPositionDetail(CThostFtdcQryInvestorPositionDetailField *pQryInvestorPositionDetail, uvtrader_rtcallback callback,int uuid);
 	///报单录入请求
-	void ReqOrderInsert(CThostFtdcInputOrderField *pInputOrder, void(*callback)(int, void*),int uuid);
+	void ReqOrderInsert(CThostFtdcInputOrderField *pInputOrder, uvtrader_rtcallback callback,int uuid);
 	///报单操作请求
-	void ReqOrderAction(CThostFtdcInputOrderActionField *pInputOrderAction, void(*callback)(int, void*),int uuid);
+	void ReqOrderAction(CThostFtdcInputOrderActionField *pInputOrderAction, uvtrader_rtcallback callback,int uuid);
 	///请求查询合约保证金率
-	void ReqQryInstrumentMarginRate(CThostFtdcQryInstrumentMarginRateField *pQryInstrumentMarginRate, void(*callback)(int, void*),int uuid);
+	void ReqQryInstrumentMarginRate(CThostFtdcQryInstrumentMarginRateField *pQryInstrumentMarginRate, uvtrader_rtcallback callback,int uuid);
 	///请求查询行情
-	void ReqQryDepthMarketData(CThostFtdcQryDepthMarketDataField *pQryDepthMarketData, void(*callback)(int, void*),int uuid);
+	void ReqQryDepthMarketData(CThostFtdcQryDepthMarketDataField *pQryDepthMarketData, uvtrader_rtcallback callback,int uuid);
 	///请求查询投资者结算结果
-	void ReqQrySettlementInfo(CThostFtdcQrySettlementInfoField *pQrySettlementInfo, void(*callback)(int, void*),int uuid);
+	void ReqQrySettlementInfo(CThostFtdcQrySettlementInfoField *pQrySettlementInfo, uvtrader_rtcallback callback,int uuid);
     
     const char* GetTradingDay();
 	//对象初始化
@@ -65,7 +67,7 @@ private:
 
     static void _on_completed(uv_work_t * work,int);
 	///调用ctp api
-	void invoke(void* field, int ret, void(*callback)(int, void*), int uuid);
+	void invoke(void* field, int ret, uvtrader_rtcallback callback, int uuid);
 
     void on_invoke(int event_type, void* _stru, CThostFtdcRspInfoField *pRspInfo_org, int nRequestID, bool bIsLast);
 	///当客户端与交易后台建立起通信连接时（还未登录前），该方法被调用
@@ -116,10 +118,10 @@ private:
 	virtual void OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
 
 	CThostFtdcTraderApi* m_pApi;//交易API
-
+	WrapTrader* m_owner;
 	int iRequestID;
     uv_async_t async_t;
-	static std::map<int, CbWrap*> cb_map;
+	static std::map<int, CbWrap<WrapTrader>*> cb_map;
 };
 
 

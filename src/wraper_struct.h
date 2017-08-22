@@ -52,10 +52,10 @@ struct UVConnectField {
 	int public_topic_type;
 	int private_topic_type;
 };
-
+template<typename T>
 struct LookupCtpApiBaton {
 	uv_work_t work;
-	void(*callback)(int, void*);
+	void(T::*callback)(int, void*);
 	void* uv_trader_obj;
 	void* args;
 	int fun;
@@ -63,6 +63,9 @@ struct LookupCtpApiBaton {
 	int nResult;
 	int uuid;//回调标识
 	int nCount;
+	void call(T* obj) {
+		(obj->*callback)(nResult, this);
+	}
 };
 
 struct CbRtnField {
@@ -74,9 +77,13 @@ struct CbRtnField {
 	void* rspInfo;
 	bool bIsLast;
 };
-
+template<typename T>
 struct CbWrap {
-	void(*callback)(CbRtnField *data);
+	T* owner;
+	void(T::*callback)(CbRtnField *data);
+	inline void call(CbRtnField *data) {
+		(owner->*callback)(data);
+	}
 };
 
 struct ptrCmp

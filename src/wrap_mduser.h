@@ -35,20 +35,20 @@ public:
 	static Persistent<Function> constructor;
 private:
 	static void initEventMap();
-	static void pkg_cb_userlogin(CbRtnField* data, Local<Value>*cbArray);
-	static void pkg_cb_userlogout(CbRtnField* data, Local<Value>*cbArray);
-	static void pkg_cb_rspsubmarketdata(CbRtnField* data, Local<Value>*cbArray);
-	static void pkg_cb_unrspsubmarketdata(CbRtnField* data, Local<Value>*cbArray);
-	static void pkg_cb_rtndepthmarketdata(CbRtnField* data, Local<Value>*cbArray); 
-	static void pkg_cb_rsperror(CbRtnField* data, Local<Value>*cbArray);
-	static Local<Value> pkg_rspinfo(CThostFtdcRspInfoField *pRspInfo);
+	void pkg_cb_userlogin(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_userlogout(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_rspsubmarketdata(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_unrspsubmarketdata(CbRtnField* data, Local<Value>*cbArray);
+	void pkg_cb_rtndepthmarketdata(CbRtnField* data, Local<Value>*cbArray); 
+	void pkg_cb_rsperror(CbRtnField* data, Local<Value>*cbArray);
+	Local<Value> pkg_rspinfo(CThostFtdcRspInfoField *pRspInfo);
 	uv_mduser* uvMdUser;
-	static int s_uuid;
-	static void FunCallback(CbRtnField *data);
-	static void FunRtnCallback(int result, void* baton);
+	int s_uuid=0;
+	void FunCallback(CbRtnField *data);
+	void FunRtnCallback(int result, void* baton);
 	static std::map<const char*, int,ptrCmp> event_map;
-	static std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > callback_map;
-	static std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > fun_rtncb_map;
+	std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > callback_map;
+	std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > fun_rtncb_map;
 };
 
 #endif

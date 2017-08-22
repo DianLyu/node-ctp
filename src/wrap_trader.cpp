@@ -2,17 +2,33 @@
 #include "wrap_trader.h"
 #include "defines.h"
 
-int WrapTrader::s_uuid;
 std::map<const char*, int,ptrCmp> WrapTrader::event_map;
-std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > WrapTrader::callback_map;
-std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > WrapTrader::fun_rtncb_map;
 
 WrapTrader::WrapTrader(const FunctionCallbackInfo<Value>& args) {
 	logger_cout("wrap_trader------>object start init");
 	this->Wrap(args.This());
-	uvTrader = new uv_trader();	
+	uvTrader = new uv_trader(this);	
+	if (args.Length()>0) {
+		auto opt = Local<Object>::Cast(args[0]);
+		auto names = opt->GetOwnPropertyNames();
+		auto len = names->Length();
+		for (auto i = 0; i < len; i++) {
+			Local<String> eventName = names->Get(i)->ToString();
+			Local<Function> cb = Local<Function>::Cast(opt->Get(eventName));
+
+			String::Utf8Value eNameAscii(eventName);
+			auto eIt = event_map.find(*eNameAscii);
+			if (eIt == event_map.end()) {
+				continue;
+			}
+			else {
+				AddToMap(callback_map, eIt->second, cb);
+				uvTrader->On(*eNameAscii, eIt->second, &WrapTrader::FunCallback);
+			}
+		}
+	}
 	logger_cout("wrap_trader------>object init successed");
-}
+}::
 
 WrapTrader::~WrapTrader(void) {
     if(uvTrader){
@@ -86,15 +102,15 @@ FUNCTIONCALLBACK(WrapTrader::On)
 		return;
 	}
 
-	auto cIt = callback_map.find(eIt->second);
-	if (cIt != callback_map.end()) {
+	auto cIt = obj->callback_map.find(eIt->second);
+	if (cIt != obj->callback_map.end()) {
 		logger_cout("Callback is defined before");
 		isolate->ThrowException(Exception::TypeError(GETLOCAL("Callback is defined before")));
 		return;
 	}
-	AddToMap(callback_map, eIt->second, cb);
+	AddToMap(obj->callback_map, eIt->second, cb);
 	//callback_map[eIt->second] = Persistent<Function>(isolate,cb);
-	obj->uvTrader->On(*eNameAscii,eIt->second, FunCallback);
+	obj->uvTrader->On(*eNameAscii,eIt->second, &WrapTrader::FunCallback);
 	args.GetReturnValue().Set(GETLOCAL(0));
 }
 
@@ -114,8 +130,8 @@ FUNCTIONCALLBACK(WrapTrader::Connect)
 	int uuid = -1;
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[4]->IsUndefined() && args[4]->IsFunction()) {
-		uuid = ++s_uuid;
-		AddToMap(fun_rtncb_map, uuid, Local<Function>::Cast(args[4]));
+		uuid = ++obj->s_uuid;
+		AddToMap(obj->fun_rtncb_map, uuid, Local<Function>::Cast(args[4]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -137,7 +153,7 @@ FUNCTIONCALLBACK(WrapTrader::Connect)
 	pConnectField.public_topic_type = publicTopicType;
 	pConnectField.private_topic_type = privateTopicType;	
 	logger_cout(log.append(" ").append(pConnectField.front_addr).append("|").append(pConnectField.szPath).append("|").append(to_string(publicTopicType)).append("|").append(to_string(privateTopicType)).c_str());
-	obj->uvTrader->Connect(&pConnectField, FunRtnCallback, uuid);
+	obj->uvTrader->Connect(&pConnectField, &WrapTrader::FunRtnCallback, uuid);
 	return;
 }
 
@@ -154,8 +170,8 @@ FUNCTIONCALLBACK(WrapTrader::ReqUserLogin)
 	int uuid = -1;
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[3]->IsUndefined() && args[3]->IsFunction()) {
-		uuid = ++s_uuid;
-		AddToMap(fun_rtncb_map, uuid, Local<Function>::Cast(args[3]));
+		uuid = ++obj->s_uuid;
+		AddToMap(obj->fun_rtncb_map, uuid, Local<Function>::Cast(args[3]));
 		//AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[3]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
@@ -175,7 +191,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqUserLogin)
 	//strcpy(req.UserID, ((std::string)*userIdAscii).c_str());
 	//strcpy(req.Password, ((std::string)*pwdAscii).c_str());	
 	logger_cout(log.append(" ").append(req.BrokerID).append("|").append(req.UserID).append("|").append(req.Password).c_str());
-	obj->uvTrader->ReqUserLogin(&req, FunRtnCallback, uuid);
+	obj->uvTrader->ReqUserLogin(&req, &WrapTrader::FunRtnCallback, uuid);
 	return;
 }
 
@@ -192,8 +208,8 @@ FUNCTIONCALLBACK(WrapTrader::ReqUserLogout)
 	int uuid = -1;
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[2]->IsUndefined() && args[2]->IsFunction()) {
-		uuid = ++s_uuid;
-		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[2]));
+		uuid = ++obj->s_uuid;
+		AddToMap(obj->fun_rtncb_map,uuid,Local<Function>::Cast(args[2]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -209,7 +225,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqUserLogout)
 	/*strcpy(req.BrokerID, ((std::string)*brokerAscii).c_str());
 	strcpy(req.UserID, ((std::string)*userIdAscii).c_str());*/
 	logger_cout(log.append(" ").append(req.BrokerID).append("|").append(req.UserID).c_str());
-	obj->uvTrader->ReqUserLogout(&req, FunRtnCallback, uuid);
+	obj->uvTrader->ReqUserLogout(&req, &WrapTrader::FunRtnCallback, uuid);
 	return;
 }
 
@@ -226,8 +242,8 @@ FUNCTIONCALLBACK(WrapTrader::ReqSettlementInfoConfirm)
 	int uuid = -1;	
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[2]->IsUndefined() && args[2]->IsFunction()) {
-		uuid = ++s_uuid;
-		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[2]));
+		uuid = ++obj->s_uuid;
+		AddToMap(obj->fun_rtncb_map,uuid,Local<Function>::Cast(args[2]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}	 
@@ -243,7 +259,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqSettlementInfoConfirm)
 	/*strcpy(req.BrokerID, ((std::string)*brokerAscii).c_str());
 	strcpy(req.InvestorID, ((std::string)*investorIdAscii).c_str());*/
 	logger_cout(log.append(" ").append(req.BrokerID).append("|").append(req.InvestorID).c_str());
-	obj->uvTrader->ReqSettlementInfoConfirm(&req, FunRtnCallback, uuid);
+	obj->uvTrader->ReqSettlementInfoConfirm(&req, &WrapTrader::FunRtnCallback, uuid);
 	return;
 }
 
@@ -260,8 +276,8 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryInstrument)
 	int uuid = -1;
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[1]->IsUndefined() && args[1]->IsFunction()) {
-		uuid = ++s_uuid;
-		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[1]));
+		uuid = ++obj->s_uuid;
+		AddToMap(obj->fun_rtncb_map,uuid,Local<Function>::Cast(args[1]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -274,7 +290,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryInstrument)
 	ArgsToObject(args, req.InstrumentID);
 	//strcpy(req.InstrumentID, ((std::string)*instrumentIdAscii).c_str());
 	logger_cout(log.append(" ").append(req.InstrumentID).c_str());
-	obj->uvTrader->ReqQryInstrument(&req, FunRtnCallback, uuid);
+	obj->uvTrader->ReqQryInstrument(&req, &WrapTrader::FunRtnCallback, uuid);
 	return;
 }
 
@@ -291,8 +307,8 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryTradingAccount)
 	int uuid = -1;
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[2]->IsUndefined() && args[2]->IsFunction()) {
-		uuid = ++s_uuid;
-		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[2]));
+		uuid = ++obj->s_uuid;
+		AddToMap(obj->fun_rtncb_map,uuid,Local<Function>::Cast(args[2]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -307,7 +323,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryTradingAccount)
 	/*strcpy(req.BrokerID, ((std::string)*brokerAscii).c_str());
 	strcpy(req.InvestorID, ((std::string)*investorIdAscii).c_str());*/
 	logger_cout(log.append(" ").append(req.BrokerID).append("|").append(req.InvestorID).c_str());
-	obj->uvTrader->ReqQryTradingAccount(&req, FunRtnCallback, uuid);
+	obj->uvTrader->ReqQryTradingAccount(&req, &WrapTrader::FunRtnCallback, uuid);
 	return;
 }
 
@@ -324,8 +340,8 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryInvestorPosition)
 	int uuid = -1;
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[3]->IsUndefined() && args[3]->IsFunction()) {
-		uuid = ++s_uuid;
-		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[3]));
+		uuid = ++obj->s_uuid;
+		AddToMap(obj->fun_rtncb_map,uuid,Local<Function>::Cast(args[3]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -344,7 +360,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryInvestorPosition)
 */
 	ArgsToObject(args, req.BrokerID, req.InvestorID, req.InstrumentID);
 	logger_cout(log.append(" ").append(req.BrokerID).append("|").append(req.InvestorID).append("|").append(req.InstrumentID).c_str());
-	obj->uvTrader->ReqQryInvestorPosition(&req, FunRtnCallback, uuid);
+	obj->uvTrader->ReqQryInvestorPosition(&req, &WrapTrader::FunRtnCallback, uuid);
 	return;
 }
 
@@ -361,8 +377,8 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryInvestorPositionDetail)
 	int uuid = -1;
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[3]->IsUndefined() && args[3]->IsFunction()) {
-		uuid = ++s_uuid;
-		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[3]));
+		uuid = ++obj->s_uuid;
+		AddToMap(obj->fun_rtncb_map,uuid,Local<Function>::Cast(args[3]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -380,7 +396,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryInvestorPositionDetail)
 	strcpy(req.InstrumentID, ((std::string)*instrumentIdAscii).c_str());*/
 	ArgsToObject(args, req.BrokerID, req.InvestorID, req.InstrumentID);
 	logger_cout(log.append(" ").append(req.BrokerID).append("|").append(req.InvestorID).append("|").append(req.InstrumentID).c_str());
-	obj->uvTrader->ReqQryInvestorPositionDetail(&req, FunRtnCallback, uuid);
+	obj->uvTrader->ReqQryInvestorPositionDetail(&req, &WrapTrader::FunRtnCallback, uuid);
 	return;
 }
 
@@ -397,8 +413,8 @@ FUNCTIONCALLBACK(WrapTrader::ReqOrderInsert)
 	int uuid = -1;
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[1]->IsUndefined() && args[1]->IsFunction()) {
-		uuid = ++s_uuid;
-		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[1]));
+		uuid = ++obj->s_uuid;
+		AddToMap(obj->fun_rtncb_map,uuid,Local<Function>::Cast(args[1]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -569,7 +585,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqOrderInsert)
 		append("forceCloseReason:").append(t5).append("|").
 		append("isAutoSuspend:").append(to_string(isAutoSuspend)).append("|").
 		append("useForceClose:").append(to_string(userForceClose)).append("|").c_str());
-	obj->uvTrader->ReqOrderInsert(&req, FunRtnCallback, uuid);
+	obj->uvTrader->ReqOrderInsert(&req, &WrapTrader::FunRtnCallback, uuid);
 	return;
 }
 
@@ -587,8 +603,8 @@ FUNCTIONCALLBACK(WrapTrader::ReqOrderAction)
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 
 	if (!args[1]->IsUndefined() && args[1]->IsFunction()) {
-		uuid = ++s_uuid;
-		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[1]));
+		uuid = ++obj->s_uuid;
+		AddToMap(obj->fun_rtncb_map,uuid,Local<Function>::Cast(args[1]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -668,7 +684,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqOrderAction)
 		append(req.InstrumentID).append("|").
 		append(to_string(actionFlag)).append("|").c_str());
 
-	obj->uvTrader->ReqOrderAction(&req, FunRtnCallback, uuid);
+	obj->uvTrader->ReqOrderAction(&req, &WrapTrader::FunRtnCallback, uuid);
 	return;
 }
 
@@ -686,8 +702,8 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryInstrumentMarginRate)
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 
 	if (!args[4]->IsUndefined() && args[4]->IsFunction()) {
-		uuid = ++s_uuid;
-		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[4]));
+		uuid = ++obj->s_uuid;
+		AddToMap(obj->fun_rtncb_map,uuid,Local<Function>::Cast(args[4]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -713,7 +729,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryInstrumentMarginRate)
 		append(req.InstrumentID).append("|").
 		append(to_string(hedgeFlag)).append("|").c_str());	 
 
-	obj->uvTrader->ReqQryInstrumentMarginRate(&req, FunRtnCallback, uuid);
+	obj->uvTrader->ReqQryInstrumentMarginRate(&req, &WrapTrader::FunRtnCallback, uuid);
 	return;
 }
 
@@ -730,8 +746,8 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryDepthMarketData)
 	int uuid = -1;
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[1]->IsUndefined() && args[1]->IsFunction()) {
-		uuid = ++s_uuid;
-		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[1]));
+		uuid = ++obj->s_uuid;
+		AddToMap(obj->fun_rtncb_map,uuid,Local<Function>::Cast(args[1]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -745,7 +761,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryDepthMarketData)
 	ArgsToObject(args, req.InstrumentID);
 	logger_cout(log.append(" ").
 		append(req.InstrumentID).append("|").c_str());
-	obj->uvTrader->ReqQryDepthMarketData(&req, FunRtnCallback, uuid);
+	obj->uvTrader->ReqQryDepthMarketData(&req, &WrapTrader::FunRtnCallback, uuid);
 	return;
 }
 
@@ -762,8 +778,8 @@ FUNCTIONCALLBACK(WrapTrader::ReqQrySettlementInfo)
 	int uuid = -1;
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	if (!args[3]->IsUndefined() && args[3]->IsFunction()) {
-		uuid = ++s_uuid;
-		AddToMap(fun_rtncb_map,uuid,Local<Function>::Cast(args[3]));
+		uuid = ++obj->s_uuid;
+		AddToMap(obj->fun_rtncb_map,uuid,Local<Function>::Cast(args[3]));
 		std::string _head = std::string(log);
 		logger_cout(_head.append(" uuid is ").append(to_string(uuid)).c_str());
 	}
@@ -786,7 +802,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqQrySettlementInfo)
 		append(req.InvestorID).append("|").
 		append(req.TradingDay).append("|").c_str());
 
-	obj->uvTrader->ReqQrySettlementInfo(&req, FunRtnCallback, uuid);
+	obj->uvTrader->ReqQrySettlementInfo(&req, &WrapTrader::FunRtnCallback, uuid);
 	return;
 }
 
@@ -794,14 +810,14 @@ FUNCTIONCALLBACK(WrapTrader::Disposed)
 	
 	WrapTrader* obj = ObjectWrap::Unwrap<WrapTrader>(args.This());
 	obj->uvTrader->Disconnect();	
-	auto callback_it = callback_map.begin();
-	while (callback_it != callback_map.end()) {
+	auto callback_it = obj->callback_map.begin();
+	while (callback_it != obj->callback_map.end()) {
 		callback_it->second.Reset();
 		callback_it++;
 	}
 	event_map.clear();
-	callback_map.clear();
-	fun_rtncb_map.clear();
+	obj->callback_map.clear();
+	obj->fun_rtncb_map.clear();
 	delete obj->uvTrader;
     obj->uvTrader = NULL;
 	logger_cout("wrap_trader Disposed------>wrap disposed");
@@ -814,7 +830,7 @@ FUNCTIONCALLBACK(WrapTrader::GetTradingDay)
 }
 
 void WrapTrader::FunCallback(CbRtnField *data) {
-	Isolate *isolate = Isolate::GetCurrent();
+	Isolate *isolate = handle()->GetIsolate();
 	HandleScope scope(isolate);
 	auto cIt = callback_map.find(data->eFlag);
 	if (cIt == callback_map.end())
@@ -822,7 +838,7 @@ void WrapTrader::FunCallback(CbRtnField *data) {
 #define FunCallback_Switch(type,count,...) case type:{\
  Local<Value> argv[count]\
 __VA_ARGS__\
- cIt->second.Get(isolate)->Call(isolate->GetCurrentContext()->Global(), count, argv);\
+ cIt->second.Get(isolate)->Call(handle(), count, argv);\
 break;\
 }
 	switch (data->eFlag) {
@@ -852,13 +868,13 @@ break;\
 
 void WrapTrader::FunRtnCallback(int result, void* baton) {
 	CSCOPE
-	LookupCtpApiBaton* tmp = static_cast<LookupCtpApiBaton*>(baton);	 
+	LookupCtpApiBaton<WrapTrader>* tmp = static_cast<LookupCtpApiBaton<WrapTrader>*>(baton);
 	if (tmp->uuid != -1) {
 		auto it = fun_rtncb_map.find(tmp->uuid);
 		Local<Value> argv[2] = { GETLOCAL(tmp->nResult),GETLOCAL(tmp->iRequestID) };
-		it->second.Get(isolate)->Call(isolate->GetCurrentContext()->Global(), 2, argv);
+		it->second.Get(isolate)->Call(handle(), 2, argv);
 		it->second.Reset();
-		fun_rtncb_map.erase(tmp->uuid);	  		
+		fun_rtncb_map.erase(tmp->uuid);
 	}
 }
 
