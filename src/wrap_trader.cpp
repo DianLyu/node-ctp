@@ -23,7 +23,7 @@ WrapTrader::WrapTrader(const FunctionCallbackInfo<Value>& args) {
 			}
 			else {
 				AddToMap(callback_map, eIt->second, cb);
-				uvTrader->On(*eNameAscii, eIt->second, &WrapTrader::FunCallback);
+				uvTrader->On(*eNameAscii, eIt->second);
 			}
 		}
 	}
@@ -110,7 +110,7 @@ FUNCTIONCALLBACK(WrapTrader::On)
 	}
 	AddToMap(obj->callback_map, eIt->second, cb);
 	//callback_map[eIt->second] = Persistent<Function>(isolate,cb);
-	obj->uvTrader->On(*eNameAscii,eIt->second, &WrapTrader::FunCallback);
+	obj->uvTrader->On(*eNameAscii,eIt->second);
 	args.GetReturnValue().Set(GETLOCAL(0));
 }
 
@@ -153,7 +153,7 @@ FUNCTIONCALLBACK(WrapTrader::Connect)
 	pConnectField.public_topic_type = publicTopicType;
 	pConnectField.private_topic_type = privateTopicType;	
 	logger_cout(log.append(" ").append(pConnectField.front_addr).append("|").append(pConnectField.szPath).append("|").append(to_string(publicTopicType)).append("|").append(to_string(privateTopicType)).c_str());
-	obj->uvTrader->Connect(&pConnectField, &WrapTrader::FunRtnCallback, uuid);
+	obj->uvTrader->Connect(&pConnectField,  uuid);
 	return;
 }
 
@@ -191,7 +191,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqUserLogin)
 	//strcpy(req.UserID, ((std::string)*userIdAscii).c_str());
 	//strcpy(req.Password, ((std::string)*pwdAscii).c_str());	
 	logger_cout(log.append(" ").append(req.BrokerID).append("|").append(req.UserID).append("|").append(req.Password).c_str());
-	obj->uvTrader->ReqUserLogin(&req, &WrapTrader::FunRtnCallback, uuid);
+	obj->uvTrader->ReqUserLogin(&req,  uuid);
 	return;
 }
 
@@ -225,7 +225,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqUserLogout)
 	/*strcpy(req.BrokerID, ((std::string)*brokerAscii).c_str());
 	strcpy(req.UserID, ((std::string)*userIdAscii).c_str());*/
 	logger_cout(log.append(" ").append(req.BrokerID).append("|").append(req.UserID).c_str());
-	obj->uvTrader->ReqUserLogout(&req, &WrapTrader::FunRtnCallback, uuid);
+	obj->uvTrader->ReqUserLogout(&req,  uuid);
 	return;
 }
 
@@ -259,7 +259,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqSettlementInfoConfirm)
 	/*strcpy(req.BrokerID, ((std::string)*brokerAscii).c_str());
 	strcpy(req.InvestorID, ((std::string)*investorIdAscii).c_str());*/
 	logger_cout(log.append(" ").append(req.BrokerID).append("|").append(req.InvestorID).c_str());
-	obj->uvTrader->ReqSettlementInfoConfirm(&req, &WrapTrader::FunRtnCallback, uuid);
+	obj->uvTrader->ReqSettlementInfoConfirm(&req, uuid);
 	return;
 }
 
@@ -290,7 +290,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryInstrument)
 	ArgsToObject(args, req.InstrumentID);
 	//strcpy(req.InstrumentID, ((std::string)*instrumentIdAscii).c_str());
 	logger_cout(log.append(" ").append(req.InstrumentID).c_str());
-	obj->uvTrader->ReqQryInstrument(&req, &WrapTrader::FunRtnCallback, uuid);
+	obj->uvTrader->ReqQryInstrument(&req,  uuid);
 	return;
 }
 
@@ -323,7 +323,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryTradingAccount)
 	/*strcpy(req.BrokerID, ((std::string)*brokerAscii).c_str());
 	strcpy(req.InvestorID, ((std::string)*investorIdAscii).c_str());*/
 	logger_cout(log.append(" ").append(req.BrokerID).append("|").append(req.InvestorID).c_str());
-	obj->uvTrader->ReqQryTradingAccount(&req, &WrapTrader::FunRtnCallback, uuid);
+	obj->uvTrader->ReqQryTradingAccount(&req,  uuid);
 	return;
 }
 
@@ -360,7 +360,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryInvestorPosition)
 */
 	ArgsToObject(args, req.BrokerID, req.InvestorID, req.InstrumentID);
 	logger_cout(log.append(" ").append(req.BrokerID).append("|").append(req.InvestorID).append("|").append(req.InstrumentID).c_str());
-	obj->uvTrader->ReqQryInvestorPosition(&req, &WrapTrader::FunRtnCallback, uuid);
+	obj->uvTrader->ReqQryInvestorPosition(&req,  uuid);
 	return;
 }
 
@@ -396,7 +396,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryInvestorPositionDetail)
 	strcpy(req.InstrumentID, ((std::string)*instrumentIdAscii).c_str());*/
 	ArgsToObject(args, req.BrokerID, req.InvestorID, req.InstrumentID);
 	logger_cout(log.append(" ").append(req.BrokerID).append("|").append(req.InvestorID).append("|").append(req.InstrumentID).c_str());
-	obj->uvTrader->ReqQryInvestorPositionDetail(&req, &WrapTrader::FunRtnCallback, uuid);
+	obj->uvTrader->ReqQryInvestorPositionDetail(&req,  uuid);
 	return;
 }
 
@@ -585,7 +585,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqOrderInsert)
 		append("forceCloseReason:").append(t5).append("|").
 		append("isAutoSuspend:").append(to_string(isAutoSuspend)).append("|").
 		append("useForceClose:").append(to_string(userForceClose)).append("|").c_str());
-	obj->uvTrader->ReqOrderInsert(&req, &WrapTrader::FunRtnCallback, uuid);
+	obj->uvTrader->ReqOrderInsert(&req,  uuid);
 	return;
 }
 
@@ -684,7 +684,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqOrderAction)
 		append(req.InstrumentID).append("|").
 		append(to_string(actionFlag)).append("|").c_str());
 
-	obj->uvTrader->ReqOrderAction(&req, &WrapTrader::FunRtnCallback, uuid);
+	obj->uvTrader->ReqOrderAction(&req,  uuid);
 	return;
 }
 
@@ -729,7 +729,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryInstrumentMarginRate)
 		append(req.InstrumentID).append("|").
 		append(to_string(hedgeFlag)).append("|").c_str());	 
 
-	obj->uvTrader->ReqQryInstrumentMarginRate(&req, &WrapTrader::FunRtnCallback, uuid);
+	obj->uvTrader->ReqQryInstrumentMarginRate(&req,  uuid);
 	return;
 }
 
@@ -761,7 +761,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqQryDepthMarketData)
 	ArgsToObject(args, req.InstrumentID);
 	logger_cout(log.append(" ").
 		append(req.InstrumentID).append("|").c_str());
-	obj->uvTrader->ReqQryDepthMarketData(&req, &WrapTrader::FunRtnCallback, uuid);
+	obj->uvTrader->ReqQryDepthMarketData(&req,  uuid);
 	return;
 }
 
@@ -802,7 +802,7 @@ FUNCTIONCALLBACK(WrapTrader::ReqQrySettlementInfo)
 		append(req.InvestorID).append("|").
 		append(req.TradingDay).append("|").c_str());
 
-	obj->uvTrader->ReqQrySettlementInfo(&req, &WrapTrader::FunRtnCallback, uuid);
+	obj->uvTrader->ReqQrySettlementInfo(&req,  uuid);
 	return;
 }
 
@@ -838,30 +838,30 @@ void WrapTrader::FunCallback(CbRtnField *data) {
 #define FunCallback_Switch(type,count,...) case type:{\
  Local<Value> argv[count]\
 __VA_ARGS__\
- cIt->second.Get(isolate)->Call(handle(), count, argv);\
+ cIt->second.Get(isolate)->Call(handle(isolate), count, argv);\
 break;\
 }
 	switch (data->eFlag) {
 		FunCallback_Switch(T_ON_CONNECT, 1, ={ Undefined(isolate) };)
 		FunCallback_Switch(T_ON_DISCONNECTED, 1, ={ GETLOCAL(data->nReason) };)
-		FunCallback_Switch(T_ON_RSPUSERLOGIN, 4, ; pkg_cb_userlogin(data, argv);)
-		FunCallback_Switch(T_ON_RSPUSERLOGOUT, 3, ; pkg_cb_rsperror(data, argv);)
-		FunCallback_Switch(T_ON_RSPINFOCONFIRM, 4, ;pkg_cb_confirm(data, argv);)
-		FunCallback_Switch(T_ON_RSPINSERT, 4, ; pkg_cb_orderinsert(data, argv);)
-		FunCallback_Switch(T_ON_ERRINSERT, 2, ; pkg_cb_errorderinsert(data, argv);)
-		FunCallback_Switch(T_ON_RSPACTION, 4, ; pkg_cb_orderaction(data, argv);)
-		FunCallback_Switch(T_ON_ERRACTION, 2, ; pkg_cb_errorderaction(data, argv);)
-		FunCallback_Switch(T_ON_RQORDER, 4, ; pkg_cb_rspqryorder(data, argv);)
-		FunCallback_Switch(T_ON_RTNORDER, 1, ; pkg_cb_rsperror(data, argv);)
-		FunCallback_Switch(T_ON_RQTRADE, 4, ; pkg_cb_rqtrade(data, argv);)
-		FunCallback_Switch(T_ON_RTNTRADE, 1, ; pkg_cb_rtntrade(data, argv);)
-		FunCallback_Switch(T_ON_RQINVESTORPOSITION, 4, ; pkg_cb_rqinvestorposition(data, argv);)
-		FunCallback_Switch(T_ON_RQINVESTORPOSITIONDETAIL, 4, ; pkg_cb_rqinvestorpositiondetail(data, argv);)
-		FunCallback_Switch(T_ON_RQTRADINGACCOUNT,4, ; pkg_cb_rqtradingaccount(data, argv);)
-		FunCallback_Switch(T_ON_RQINSTRUMENT, 4, ; pkg_cb_rqinstrument(data, argv);)
-		FunCallback_Switch(T_ON_RQDEPTHMARKETDATA, 4, ; pkg_cb_rqdepthmarketdata(data, argv);)
-		FunCallback_Switch(T_ON_RQSETTLEMENTINFO, 4, ; pkg_cb_rqsettlementinfo(data, argv);)
-		FunCallback_Switch(T_ON_RSPERROR, 3, ; pkg_cb_rsperror(data, argv);)
+		FunCallback_Switch(T_ON_RSPUSERLOGIN, 4, ; pkg_cb_userlogin(isolate,data,argv);)
+		FunCallback_Switch(T_ON_RSPUSERLOGOUT, 3, ; pkg_cb_rsperror(isolate,data,argv);)
+		FunCallback_Switch(T_ON_RSPINFOCONFIRM, 4, ;pkg_cb_confirm(isolate,data,argv);)
+		FunCallback_Switch(T_ON_RSPINSERT, 4, ; pkg_cb_orderinsert(isolate,data,argv);)
+		FunCallback_Switch(T_ON_ERRINSERT, 2, ; pkg_cb_errorderinsert(isolate,data,argv);)
+		FunCallback_Switch(T_ON_RSPACTION, 4, ; pkg_cb_orderaction(isolate,data,argv);)
+		FunCallback_Switch(T_ON_ERRACTION, 2, ; pkg_cb_errorderaction(isolate,data,argv);)
+		FunCallback_Switch(T_ON_RQORDER, 4, ; pkg_cb_rspqryorder(isolate,data,argv);)
+		FunCallback_Switch(T_ON_RTNORDER, 1, ; pkg_cb_rsperror(isolate,data,argv);)
+		FunCallback_Switch(T_ON_RQTRADE, 4, ; pkg_cb_rqtrade(isolate,data,argv);)
+		FunCallback_Switch(T_ON_RTNTRADE, 1, ; pkg_cb_rtntrade(isolate,data,argv);)
+		FunCallback_Switch(T_ON_RQINVESTORPOSITION, 4, ; pkg_cb_rqinvestorposition(isolate,data,argv);)
+		FunCallback_Switch(T_ON_RQINVESTORPOSITIONDETAIL, 4, ; pkg_cb_rqinvestorpositiondetail(isolate,data,argv);)
+		FunCallback_Switch(T_ON_RQTRADINGACCOUNT,4, ; pkg_cb_rqtradingaccount(isolate,data,argv);)
+		FunCallback_Switch(T_ON_RQINSTRUMENT, 4, ; pkg_cb_rqinstrument(isolate,data,argv);)
+		FunCallback_Switch(T_ON_RQDEPTHMARKETDATA, 4, ; pkg_cb_rqdepthmarketdata(isolate,data,argv);)
+		FunCallback_Switch(T_ON_RQSETTLEMENTINFO, 4, ; pkg_cb_rqsettlementinfo(isolate,data,argv);)
+		FunCallback_Switch(T_ON_RSPERROR, 3, ; pkg_cb_rsperror(isolate,data,argv);)
 	}
 #undef FunCallback_Switch
 }
@@ -872,17 +872,16 @@ void WrapTrader::FunRtnCallback(int result, void* baton) {
 	if (tmp->uuid != -1) {
 		auto it = fun_rtncb_map.find(tmp->uuid);
 		Local<Value> argv[2] = { GETLOCAL(tmp->nResult),GETLOCAL(tmp->iRequestID) };
-		it->second.Get(isolate)->Call(handle(), 2, argv);
+		it->second.Get(isolate)->Call(handle(isolate), 2, argv);
 		it->second.Reset();
 		fun_rtncb_map.erase(tmp->uuid);
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void WrapTrader::pkg_cb_userlogin(CbRtnField* data, Local<Value>*cbArray) {
-	CSCOPE
-	*cbArray = GETLOCAL(data->nRequestID);
-	*(cbArray + 1) = GETLOCAL(data->bIsLast);
+void WrapTrader::pkg_cb_userlogin(Isolate*isolate,CbRtnField* data, Local<Value>cbArray[]) {
+	cbArray[0] = GETLOCAL(data->nRequestID);
+	cbArray[1] = GETLOCAL(data->bIsLast);
 	if (data->rtnField){  
 	    CThostFtdcRspUserLoginField* pRspUserLogin = static_cast<CThostFtdcRspUserLoginField*>(data->rtnField);
 		Local<Object> jsonRtn = Object::New(isolate);
@@ -901,19 +900,16 @@ jsonRtnSet(CZCETime)
 jsonRtnSet(FFEXTime)
 jsonRtnSet(INETime)
 #undef jsonRtnSet
-		*(cbArray + 2) = jsonRtn;
+		cbArray[2] = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Undefined(isolate);
+		cbArray[2] = Undefined(isolate);
 	}
-	
-	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
-	return;
+	cbArray[3] = pkg_rspinfo(isolate,data->rspInfo);
 }
-void WrapTrader::pkg_cb_userlogout(CbRtnField* data, Local<Value>*cbArray) {
-	CSCOPE
-	*cbArray = GETLOCAL(data->nRequestID);
-	*(cbArray + 1) = GETLOCAL(data->bIsLast);
+void WrapTrader::pkg_cb_userlogout(Isolate*isolate,CbRtnField* data, Local<Value>cbArray[]) {
+	cbArray[0] = GETLOCAL(data->nRequestID);
+	cbArray[1] = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcRspUserLoginField* pRspUserLogin = static_cast<CThostFtdcRspUserLoginField*>(data->rtnField);
 		Local<Object> jsonRtn = Object::New(isolate);
@@ -921,18 +917,16 @@ void WrapTrader::pkg_cb_userlogout(CbRtnField* data, Local<Value>*cbArray) {
 jsonRtnSet(BrokerID)
 jsonRtnSet(UserID)
 #undef jsonRtnSet
-		*(cbArray + 2) = jsonRtn;
+		cbArray[2] = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Undefined(isolate);
+		cbArray[2] = Undefined(isolate);
 	}
-	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
-	return;
+	cbArray[3] = pkg_rspinfo(isolate,data->rspInfo);
 }
-void WrapTrader::pkg_cb_confirm(CbRtnField* data, Local<Value>*cbArray) {
-	CSCOPE
-	*cbArray = GETLOCAL(data->nRequestID);
-	*(cbArray + 1) = GETLOCAL(data->bIsLast);
+void WrapTrader::pkg_cb_confirm(Isolate*isolate,CbRtnField* data, Local<Value>cbArray[]) {
+	cbArray[0] = GETLOCAL(data->nRequestID);
+	cbArray[1] = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcSettlementInfoConfirmField* pSettlementInfoConfirm = static_cast<CThostFtdcSettlementInfoConfirmField*>(data->rtnField);
 		Local<Object> jsonRtn = Object::New(isolate);
@@ -942,18 +936,16 @@ jsonRtnSet(InvestorID)
 jsonRtnSet(ConfirmDate)
 jsonRtnSet(ConfirmTime)
 #undef jsonRtnSet
-		*(cbArray + 2) = jsonRtn;
+		cbArray[2] = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Undefined(isolate);
+		cbArray[2] = Undefined(isolate);
 	}
-	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
-	return;
+	cbArray[3] = pkg_rspinfo(isolate, data->rspInfo);
 }
-void WrapTrader::pkg_cb_orderinsert(CbRtnField* data, Local<Value>*cbArray) {
-	CSCOPE
-	*cbArray = GETLOCAL(data->nRequestID);
-	*(cbArray + 1) = GETLOCAL(data->bIsLast);
+void WrapTrader::pkg_cb_orderinsert(Isolate*isolate,CbRtnField* data, Local<Value>cbArray[]) {
+	cbArray[0] = GETLOCAL(data->nRequestID);
+	cbArray[1] = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcInputOrderField* pInputOrder = static_cast<CThostFtdcInputOrderField*>(data->rtnField);
 		Local<Object> jsonRtn = Object::New(isolate);
@@ -982,16 +974,14 @@ jsonRtnSet(RequestID)
 jsonRtnSet(UserForceClose)
 jsonRtnSet(IsSwapOrder)
 #undef jsonRtnSet
-		*(cbArray + 2) = jsonRtn;
+		cbArray[2] = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Undefined(isolate);
+		cbArray[2] = Undefined(isolate);
 	}
-	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
-	return;
+	cbArray[3] = pkg_rspinfo(isolate, data->rspInfo);
 }
-void WrapTrader::pkg_cb_errorderinsert(CbRtnField* data, Local<Value>*cbArray) {
-	CSCOPE
+void WrapTrader::pkg_cb_errorderinsert(Isolate*isolate,CbRtnField* data, Local<Value>cbArray[]) {
     if (data->rtnField){ 
 	    CThostFtdcInputOrderField* pInputOrder = static_cast<CThostFtdcInputOrderField*>(data->rtnField);
 		Local<Object> jsonRtn = Object::New(isolate);
@@ -1020,18 +1010,16 @@ jsonRtnSet(RequestID)
 jsonRtnSet(UserForceClose)
 jsonRtnSet(IsSwapOrder)
 #undef jsonRtnSet
-		*cbArray = jsonRtn;
+		cbArray[0] = jsonRtn;
 	}
 	else {
-		*cbArray = Undefined(isolate);
+		cbArray[0] = Undefined(isolate);
 	}
-	*(cbArray + 1) = pkg_rspinfo(data->rspInfo);
-	return;
+	cbArray[1] = pkg_rspinfo(isolate, data->rspInfo);
 }
-void WrapTrader::pkg_cb_orderaction(CbRtnField* data, Local<Value>*cbArray) {
-	CSCOPE
-	*cbArray = GETLOCAL(data->nRequestID);
-	*(cbArray + 1) = GETLOCAL(data->bIsLast);
+void WrapTrader::pkg_cb_orderaction(Isolate*isolate,CbRtnField* data, Local<Value>cbArray[]) {
+	cbArray[0] = GETLOCAL(data->nRequestID);
+	cbArray[1] = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcInputOrderActionField* pInputOrderAction = static_cast<CThostFtdcInputOrderActionField*>(data->rtnField);
 		Local<Object> jsonRtn = Object::New(isolate);
@@ -1051,16 +1039,14 @@ jsonRtnSet(VolumeChange)
 jsonRtnSet(UserID)
 jsonRtnSet(InstrumentID)
 #undef jsonRtnSet
-		*(cbArray + 2) = jsonRtn;
+		cbArray[2] = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Undefined(isolate);
+		cbArray[2] = Undefined(isolate);
 	}
-	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
-	return;
+	cbArray[3] = pkg_rspinfo(isolate, data->rspInfo);
 }
-void WrapTrader::pkg_cb_errorderaction(CbRtnField* data, Local<Value>*cbArray) {
-	CSCOPE
+void WrapTrader::pkg_cb_errorderaction(Isolate*isolate,CbRtnField* data, Local<Value>cbArray[]) {
     if (data->rtnField){ 
 	    CThostFtdcOrderActionField* pOrderAction = static_cast<CThostFtdcOrderActionField*>(data->rtnField);
 		Local<Object> jsonRtn = Object::New(isolate);
@@ -1090,18 +1076,16 @@ jsonRtnSet(UserID)
 jsonRtnSet(StatusMsg)
 jsonRtnSet(InstrumentID)
 #undef jsonRtnSet
-		*cbArray = jsonRtn;
+		cbArray[0] = jsonRtn;
 	}
 	else {
-		*cbArray = Undefined(isolate);
+		cbArray[0] = Undefined(isolate);
 	}
-	*(cbArray + 1) = pkg_rspinfo(data->rspInfo);
-	return;
+	cbArray[1] = pkg_rspinfo(isolate,data->rspInfo);
 }
-void WrapTrader::pkg_cb_rspqryorder(CbRtnField* data, Local<Value>*cbArray) {
-	CSCOPE
-	*cbArray = GETLOCAL(data->nRequestID);
-	*(cbArray + 1) = GETLOCAL(data->bIsLast);
+void WrapTrader::pkg_cb_rspqryorder(Isolate*isolate,CbRtnField* data, Local<Value>cbArray[]) {
+	cbArray[0] = GETLOCAL(data->nRequestID);
+	cbArray[1] = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcOrderField* pOrder = static_cast<CThostFtdcOrderField*>(data->rtnField);
 		Local<Object> jsonRtn = Object::New(isolate);
@@ -1164,16 +1148,14 @@ jsonRtnSet(RelativeOrderSysID)
 jsonRtnSet(ZCETotalTradedVolume)
 jsonRtnSet(IsSwapOrder)
 #undef jsonRtnSet
-		*(cbArray + 2) = jsonRtn;
+		cbArray[2] = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Undefined(isolate);
+		cbArray[2] = Undefined(isolate);
 	}
-	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
-	return;
+	cbArray[3] = pkg_rspinfo(isolate,data->rspInfo);
 }
-void WrapTrader::pkg_cb_rtnorder(CbRtnField* data, Local<Value>*cbArray) {
-	CSCOPE
+void WrapTrader::pkg_cb_rtnorder(Isolate*isolate,CbRtnField* data, Local<Value>cbArray[]) {
     if (data->rtnField){ 
 	    CThostFtdcOrderField* pOrder = static_cast<CThostFtdcOrderField*>(data->rtnField);
 		Local<Object> jsonRtn = Object::New(isolate);
@@ -1236,17 +1218,15 @@ jsonRtnSet(RelativeOrderSysID)
 jsonRtnSet(ZCETotalTradedVolume)
 jsonRtnSet(IsSwapOrder)
 #undef jsonRtnSet
-		*cbArray = jsonRtn;
+		cbArray[0] = jsonRtn;
 	}
 	else {
-		*cbArray = Undefined(isolate);
+		cbArray[0] = Undefined(isolate);
 	}
-	return;
 }
-void WrapTrader::pkg_cb_rqtrade(CbRtnField* data, Local<Value>*cbArray) {
-	CSCOPE
-	*cbArray = GETLOCAL(data->nRequestID);
-	*(cbArray + 1) = GETLOCAL(data->bIsLast);
+void WrapTrader::pkg_cb_rqtrade(Isolate*isolate,CbRtnField* data, Local<Value>cbArray[]) {
+	cbArray[0] = GETLOCAL(data->nRequestID);
+	cbArray[1] = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcTradeField* pTrade = static_cast<CThostFtdcTradeField*>(data->rtnField);
 		Local<Object> jsonRtn = Object::New(isolate);
@@ -1282,16 +1262,14 @@ jsonRtnSet(SettlementID)
 jsonRtnSet(BrokerOrderSeq)
 jsonRtnSet(TradeSource)
 #undef jsonRtnSet
-		*(cbArray + 2) = jsonRtn;
+		cbArray[2] = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Undefined(isolate);
+		cbArray[2] = Undefined(isolate);
 	}
-	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
-	return;
+	cbArray[3] = pkg_rspinfo(isolate,data->rspInfo);
 }
-void WrapTrader::pkg_cb_rtntrade(CbRtnField* data, Local<Value>*cbArray) {
-	CSCOPE
+void WrapTrader::pkg_cb_rtntrade(Isolate*isolate,CbRtnField* data, Local<Value>cbArray[]) {
     if (data->rtnField){ 
 	    CThostFtdcTradeField* pTrade = static_cast<CThostFtdcTradeField*>(data->rtnField);
 		Local<Object> jsonRtn = Object::New(isolate);
@@ -1327,18 +1305,15 @@ jsonRtnSet(SettlementID)
 jsonRtnSet(BrokerOrderSeq)
 jsonRtnSet(TradeSource)
 #undef jsonRtnSet
-		*cbArray = jsonRtn;
+		cbArray[0] = jsonRtn;
 	}
 	else {
-		*cbArray = Undefined(isolate);
+		cbArray[0] = Undefined(isolate);
 	}
-	 
-	return;
 }
-void WrapTrader::pkg_cb_rqinvestorposition(CbRtnField* data, Local<Value>*cbArray) {
-	CSCOPE
-	*cbArray = GETLOCAL(data->nRequestID);
-	*(cbArray + 1) = GETLOCAL(data->bIsLast);
+void WrapTrader::pkg_cb_rqinvestorposition(Isolate*isolate,CbRtnField* data, Local<Value>cbArray[]) {
+	cbArray[0] = GETLOCAL(data->nRequestID);
+	cbArray[1] = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcInvestorPositionField* _pInvestorPosition = static_cast<CThostFtdcInvestorPositionField*>(data->rtnField);
 		Local<Object> jsonRtn = Object::New(isolate);
@@ -1384,18 +1359,16 @@ jsonRtnSet(TodayPosition)
 jsonRtnSet(MarginRateByMoney)
 jsonRtnSet(MarginRateByVolume)
 #undef jsonRtnSet
-		*(cbArray + 2) = jsonRtn;
+		cbArray[2] = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Undefined(isolate);
+		cbArray[2] = Undefined(isolate);
 	}
-	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
-	return;
+	cbArray[3] = pkg_rspinfo(isolate,data->rspInfo);
 }
-void WrapTrader::pkg_cb_rqinvestorpositiondetail(CbRtnField* data, Local<Value>*cbArray) {
-	CSCOPE
-	*cbArray = GETLOCAL(data->nRequestID);
-	*(cbArray + 1) = GETLOCAL(data->bIsLast);
+void WrapTrader::pkg_cb_rqinvestorpositiondetail(Isolate*isolate,CbRtnField* data, Local<Value>cbArray[]) {
+	cbArray[0] = GETLOCAL(data->nRequestID);
+	cbArray[1] = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcInvestorPositionDetailField* pInvestorPositionDetail = static_cast<CThostFtdcInvestorPositionDetailField*>(data->rtnField);
 		Local<Object> jsonRtn = Object::New(isolate);
@@ -1427,18 +1400,16 @@ jsonRtnSet(SettlementPrice)
 jsonRtnSet(CloseVolume)
 jsonRtnSet(CloseAmount)
 #undef jsonRtnSet
-		*(cbArray + 2) = jsonRtn;
+		cbArray[2] = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Undefined(isolate);
+		cbArray[2] = Undefined(isolate);
 	}
-	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
-	return;
+	cbArray[3] = pkg_rspinfo(isolate,data->rspInfo);
 }
-void WrapTrader::pkg_cb_rqtradingaccount(CbRtnField* data, Local<Value>*cbArray) {
-	CSCOPE
-	*cbArray = GETLOCAL(data->nRequestID);
-	*(cbArray + 1) = GETLOCAL(data->bIsLast);
+void WrapTrader::pkg_cb_rqtradingaccount(Isolate*isolate,CbRtnField* data, Local<Value>cbArray[]) {
+	cbArray[0] = GETLOCAL(data->nRequestID);
+	cbArray[1] = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcTradingAccountField *pTradingAccount = static_cast<CThostFtdcTradingAccountField*>(data->rtnField);
 		Local<Object> jsonRtn = Object::New(isolate);
@@ -1490,18 +1461,16 @@ jsonRtnSet(SpecProductCloseProfit)
 jsonRtnSet(SpecProductPositionProfitByAlg)
 jsonRtnSet(SpecProductExchangeMargin)
 #undef jsonRtnSet
-		*(cbArray + 2) = jsonRtn;
+		cbArray[2] = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Undefined(isolate);
+		cbArray[2] = Undefined(isolate);
 	}
-	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
-	return;
+	cbArray[3] = pkg_rspinfo(isolate,data->rspInfo);
 }
-void WrapTrader::pkg_cb_rqinstrument(CbRtnField* data, Local<Value>*cbArray) {
-	CSCOPE
-	*cbArray = GETLOCAL(data->nRequestID);
-	*(cbArray + 1) = GETLOCAL(data->bIsLast);
+void WrapTrader::pkg_cb_rqinstrument(Isolate*isolate,CbRtnField* data, Local<Value>cbArray[]) {
+	cbArray[0] = GETLOCAL(data->nRequestID);
+	cbArray[1] = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcInstrumentField *pInstrument = static_cast<CThostFtdcInstrumentField*>(data->rtnField);
 		Local<Object> jsonRtn = Object::New(isolate);
@@ -1533,18 +1502,16 @@ jsonRtnSet(LongMarginRatio)
 jsonRtnSet(ShortMarginRatio)
 jsonRtnSet(MaxMarginSideAlgorithm)
 #undef jsonRtnSet
-		*(cbArray + 2) = jsonRtn;
+		cbArray[2] = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Undefined(isolate);
+		cbArray[2] = Undefined(isolate);
 	}
-	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
-	return;
+	cbArray[3] = pkg_rspinfo(isolate,data->rspInfo);
 }
-void WrapTrader::pkg_cb_rqdepthmarketdata(CbRtnField* data, Local<Value>*cbArray) {
-	CSCOPE
-	*cbArray = GETLOCAL(data->nRequestID);
-	*(cbArray + 1) = GETLOCAL(data->bIsLast);
+void WrapTrader::pkg_cb_rqdepthmarketdata(Isolate*isolate,CbRtnField* data, Local<Value>cbArray[]) {
+	cbArray[0] = GETLOCAL(data->nRequestID);
+	cbArray[1] = GETLOCAL(data->bIsLast);
     if (data->rtnField){ 
 	    CThostFtdcDepthMarketDataField *pDepthMarketData = static_cast<CThostFtdcDepthMarketDataField*>(data->rtnField);
 		Local<Object> jsonRtn = Object::New(isolate);
@@ -1594,18 +1561,16 @@ jsonRtnSet(AskVolume5)
 jsonRtnSet(AveragePrice)
 jsonRtnSet(ActionDay)
 #undef jsonRtnSet
-		*(cbArray + 2) = jsonRtn;
+		cbArray[2] = jsonRtn;
 	}
 	else {
-		*(cbArray + 2) = Undefined(isolate);
+		cbArray[2] = Undefined(isolate);
 	}
-	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
-	return;
+	cbArray[3] = pkg_rspinfo(isolate,data->rspInfo);
 }
-void WrapTrader::pkg_cb_rqsettlementinfo(CbRtnField* data, Local<Value>*cbArray) {
-	CSCOPE
-	*cbArray = GETLOCAL(data->nRequestID);
-	*(cbArray + 1) = GETLOCAL(data->bIsLast);
+void WrapTrader::pkg_cb_rqsettlementinfo(Isolate*isolate,CbRtnField* data, Local<Value>cbArray[]) {
+	cbArray[0] = GETLOCAL(data->nRequestID);
+	cbArray[1] = GETLOCAL(data->bIsLast);
     if(data->rtnField!=NULL){
 	    CThostFtdcSettlementInfoField *pSettlementInfo = static_cast<CThostFtdcSettlementInfoField*>(data->rtnField);
 		Local<Object> jsonRtn = Object::New(isolate);
@@ -1617,23 +1582,20 @@ jsonRtnSet(InvestorID)
 jsonRtnSet(SequenceNo)
 jsonRtnSet(Content)
 #undef jsonRtnSet
-	    *(cbArray + 2) = jsonRtn;
+	    cbArray[2] = jsonRtn;
 	}
 	else {
-	    *(cbArray + 2) = Undefined(isolate);
+	    cbArray[2] = Undefined(isolate);
     }
-	*(cbArray + 3) = pkg_rspinfo(data->rspInfo);
+	cbArray[3] = pkg_rspinfo(isolate,data->rspInfo);
+}
+void WrapTrader::pkg_cb_rsperror(Isolate*isolate,CbRtnField* data, Local<Value>cbArray[]) {
+	cbArray[0] = GETLOCAL(data->nRequestID);
+	cbArray[1] = GETLOCAL(data->bIsLast);
+	cbArray[2] = pkg_rspinfo(isolate,data->rspInfo);
 	return;
 }
-void WrapTrader::pkg_cb_rsperror(CbRtnField* data, Local<Value>*cbArray) {
-	CSCOPE
-	*cbArray = GETLOCAL(data->nRequestID);
-	*(cbArray + 1) = GETLOCAL(data->bIsLast);
-	*(cbArray + 2) = pkg_rspinfo(data->rspInfo);
-	return;
-}
-Local<Value> WrapTrader::pkg_rspinfo(void *vpRspInfo) {
-	CSCOPE
+Local<Value> WrapTrader::pkg_rspinfo(Isolate*isolate, void *vpRspInfo) {
 	if (vpRspInfo) {
         CThostFtdcRspInfoField *pRspInfo = static_cast<CThostFtdcRspInfoField*>(vpRspInfo);
 		Local<Object> jsonInfo = Object::New(isolate);

@@ -14,21 +14,19 @@
 class WrapMdUser;
 extern void logger_cout(const char* content);
 extern std::string to_string(int val);
-typedef void(WrapMdUser::*uvmd_callback)(CbRtnField* cbResult);
-typedef void(WrapMdUser::*uv_rtcallback)(int, void*);
 class uv_mduser :public CThostFtdcMdSpi {
 public:
 	uv_mduser(WrapMdUser* owner);
 	~uv_mduser(void);
 	
 	///注册事件
-	int On(const char* eName, int cb_type, uvmd_callback callback);
+	int On(const char* eName, int cb_type);
 	///连接前置机
-	void  Connect(UVConnectField* pConnectField, uv_rtcallback, int uuid);
-	void  ReqUserLogin(CThostFtdcReqUserLoginField *pReqUserLoginField, uv_rtcallback, int uuid);
-	void  ReqUserLogout(CThostFtdcUserLogoutField *pUserLogout, uv_rtcallback, int uuid);
-	void  SubscribeMarketData(char *ppInstrumentID[], int nCount, uv_rtcallback, int uuid);
-	void  UnSubscribeMarketData(char *ppInstrumentID[], int nCount, uv_rtcallback, int uuid);
+	void  Connect(UVConnectField* pConnectField,  int uuid);
+	void  ReqUserLogin(CThostFtdcReqUserLoginField *pReqUserLoginField,  int uuid);
+	void  ReqUserLogout(CThostFtdcUserLogoutField *pUserLogout, int uuid);
+	void  SubscribeMarketData(char *ppInstrumentID[], int nCount, int uuid);
+	void  UnSubscribeMarketData(char *ppInstrumentID[], int nCount, int uuid);
 	void  Disposed(); 	
 
 private:
@@ -41,7 +39,7 @@ private:
 
     static void _on_completed(uv_work_t * work,int);
 	///调用ctp api
-	void invoke(void* field, int count, int ret, uv_rtcallback callback, int uuid);
+	void invoke(void* field, int count, int ret, int uuid);
 
 	void on_invoke(int event_type, void* _stru, CThostFtdcRspInfoField *pRspInfo_org, int nRequestID, bool bIsLast);
 	///当客户端与交易后台建立起通信连接时（还未登录前），该方法被调用
@@ -70,7 +68,7 @@ private:
 	CThostFtdcMdApi* m_pApi;
 	int iRequestID;
     uv_async_t async_t;
-	static std::map<int, CbWrap<WrapMdUser>*> cb_map;
+	static std::map<int, WrapMdUser*> cb_map;
 };
 
 

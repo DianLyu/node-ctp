@@ -2,8 +2,8 @@
 #include "uv_trader.h"
 #include "ThostFtdcTraderApi.h"
 #include "ThostFtdcUserApiDataType.h"
-
-std::map<int, CbWrap<WrapTrader>*> uv_trader::cb_map;
+#include "wrap_trader.h"
+std::map<int, WrapTrader*> uv_trader::cb_map;
 
 void logger_cout(const char* content) {
 	using namespace std;
@@ -32,92 +32,83 @@ void uv_trader::Disconnect() {
 	m_pApi->RegisterSpi(NULL);
 	m_pApi->Release();
 	m_pApi = NULL;
-
-	std::map<int, CbWrap<WrapTrader>*>::iterator callback_it = cb_map.begin();
-	while (callback_it != cb_map.end()) {
-	    delete callback_it->second;
-		callback_it++;
-	}
 	logger_cout("uv_trader Disconnect------>object destroyed");
 }
-int uv_trader::On(const char* eName,int cb_type, uvtrader_callback callback) {
+int uv_trader::On(const char* eName,int cb_type) {
 	std::string log = "uv_trader On------>";
-	std::map<int, CbWrap<WrapTrader>*>::iterator it = cb_map.find(cb_type);
+	std::map<int, WrapTrader*>::iterator it = cb_map.find(cb_type);
 	if (it != cb_map.end()) {
 		logger_cout(log.append(" event id").append(to_string(cb_type)).append(" register repeat").c_str());
 		return 1;//Callback is defined before
 	}
-
-	CbWrap<WrapTrader>* cb_wrap = new CbWrap<WrapTrader>();//析构函数中需要销毁
-	cb_wrap->callback = callback;
-	cb_map[cb_type] = cb_wrap;
+	cb_map[cb_type] = m_owner;
 	logger_cout(log.append(" Event:").append(eName).append(" ID:").append(to_string(cb_type)).append(" register").c_str());
 	return 0;
 }
-void uv_trader::Connect(UVConnectField* pConnectField, uvtrader_rtcallback callback, int uuid) {
+void uv_trader::Connect(UVConnectField* pConnectField,  int uuid) {
 	UVConnectField* _pConnectField = new UVConnectField();
 	memcpy(_pConnectField, pConnectField, sizeof(UVConnectField));
-	this->invoke(_pConnectField, T_CONNECT_RE, callback, uuid);//pConnectField函数外部销毁
+	this->invoke(_pConnectField, T_CONNECT_RE,  uuid);//pConnectField函数外部销毁
 }
-void uv_trader::ReqUserLogin(CThostFtdcReqUserLoginField *pReqUserLoginField, uvtrader_rtcallback callback, int uuid) {
+void uv_trader::ReqUserLogin(CThostFtdcReqUserLoginField *pReqUserLoginField,  int uuid) {
 	CThostFtdcReqUserLoginField *_pReqUserLoginField = new CThostFtdcReqUserLoginField();
 	memcpy(_pReqUserLoginField, pReqUserLoginField, sizeof(CThostFtdcReqUserLoginField));
-	this->invoke(_pReqUserLoginField, T_LOGIN_RE, callback, uuid);
+	this->invoke(_pReqUserLoginField, T_LOGIN_RE,  uuid);
 }
-void uv_trader::ReqUserLogout(CThostFtdcUserLogoutField *pUserLogout, uvtrader_rtcallback callback, int uuid) {
+void uv_trader::ReqUserLogout(CThostFtdcUserLogoutField *pUserLogout,  int uuid) {
     CThostFtdcUserLogoutField* _pUserLogout = new CThostFtdcUserLogoutField();
 	memcpy(_pUserLogout, pUserLogout, sizeof(CThostFtdcUserLogoutField));
-	this->invoke(_pUserLogout, T_LOGOUT_RE, callback, uuid);
+	this->invoke(_pUserLogout, T_LOGOUT_RE,  uuid);
 }
-void uv_trader::ReqSettlementInfoConfirm(CThostFtdcSettlementInfoConfirmField *pSettlementInfoConfirm, uvtrader_rtcallback callback, int uuid) {
+void uv_trader::ReqSettlementInfoConfirm(CThostFtdcSettlementInfoConfirmField *pSettlementInfoConfirm,  int uuid) {
 	CThostFtdcSettlementInfoConfirmField* _pSettlementInfoConfirm = new CThostFtdcSettlementInfoConfirmField();
 	memcpy(_pSettlementInfoConfirm, pSettlementInfoConfirm, sizeof(CThostFtdcSettlementInfoConfirmField));
-	this->invoke(_pSettlementInfoConfirm, T_CONFIRM_RE, callback, uuid);
+	this->invoke(_pSettlementInfoConfirm, T_CONFIRM_RE,  uuid);
 }
-void uv_trader::ReqQryInstrument(CThostFtdcQryInstrumentField *pQryInstrument, uvtrader_rtcallback callback, int uuid) {
+void uv_trader::ReqQryInstrument(CThostFtdcQryInstrumentField *pQryInstrument,  int uuid) {
 	CThostFtdcQryInstrumentField *_pQryInstrument = new CThostFtdcQryInstrumentField();
 	memcpy(_pQryInstrument, pQryInstrument, sizeof(CThostFtdcQryInstrumentField));
-	this->invoke(_pQryInstrument, T_INSTRUMENT_RE, callback, uuid);
+	this->invoke(_pQryInstrument, T_INSTRUMENT_RE,  uuid);
 }
-void uv_trader::ReqQryTradingAccount(CThostFtdcQryTradingAccountField *pQryTradingAccount, uvtrader_rtcallback callback, int uuid) {
+void uv_trader::ReqQryTradingAccount(CThostFtdcQryTradingAccountField *pQryTradingAccount,  int uuid) {
 	CThostFtdcQryTradingAccountField *_pQryTradingAccount = new CThostFtdcQryTradingAccountField();
 	memcpy(_pQryTradingAccount, pQryTradingAccount, sizeof(CThostFtdcQryTradingAccountField));
-	this->invoke(_pQryTradingAccount, T_TRADINGACCOUNT_RE, callback, uuid);
+	this->invoke(_pQryTradingAccount, T_TRADINGACCOUNT_RE,  uuid);
 }
-void uv_trader::ReqQryInvestorPosition(CThostFtdcQryInvestorPositionField *pQryInvestorPosition, uvtrader_rtcallback callback, int uuid) {
+void uv_trader::ReqQryInvestorPosition(CThostFtdcQryInvestorPositionField *pQryInvestorPosition,  int uuid) {
 	CThostFtdcQryInvestorPositionField *_pQryInvestorPosition = new CThostFtdcQryInvestorPositionField();
 	memcpy(_pQryInvestorPosition, pQryInvestorPosition, sizeof(CThostFtdcQryInvestorPositionField));
-	this->invoke(_pQryInvestorPosition, T_INVESTORPOSITION_RE, callback, uuid);
+	this->invoke(_pQryInvestorPosition, T_INVESTORPOSITION_RE,  uuid);
 }
-void uv_trader::ReqQryInvestorPositionDetail(CThostFtdcQryInvestorPositionDetailField *pQryInvestorPositionDetail, uvtrader_rtcallback callback, int uuid) {
+void uv_trader::ReqQryInvestorPositionDetail(CThostFtdcQryInvestorPositionDetailField *pQryInvestorPositionDetail,  int uuid) {
 	CThostFtdcQryInvestorPositionDetailField *_pQryInvestorPositionDetail = new CThostFtdcQryInvestorPositionDetailField();
 	memcpy(_pQryInvestorPositionDetail, pQryInvestorPositionDetail, sizeof(CThostFtdcQryInvestorPositionDetailField));
-	this->invoke(_pQryInvestorPositionDetail, T_INVESTORPOSITIONDETAIL_RE, callback, uuid);
+	this->invoke(_pQryInvestorPositionDetail, T_INVESTORPOSITIONDETAIL_RE,  uuid);
 }
-void uv_trader::ReqOrderInsert(CThostFtdcInputOrderField *pInputOrder, uvtrader_rtcallback callback, int uuid) {
+void uv_trader::ReqOrderInsert(CThostFtdcInputOrderField *pInputOrder,  int uuid) {
 	CThostFtdcInputOrderField *_pInputOrder = new CThostFtdcInputOrderField();
 	memcpy(_pInputOrder, pInputOrder, sizeof(CThostFtdcInputOrderField));
-	this->invoke(_pInputOrder, T_INSERT_RE, callback, uuid);
+	this->invoke(_pInputOrder, T_INSERT_RE,  uuid);
 }
-void uv_trader::ReqOrderAction(CThostFtdcInputOrderActionField *pInputOrderAction, uvtrader_rtcallback callback, int uuid) {
+void uv_trader::ReqOrderAction(CThostFtdcInputOrderActionField *pInputOrderAction,  int uuid) {
 	CThostFtdcInputOrderActionField *_pInputOrderAction = new CThostFtdcInputOrderActionField();
 	memcpy(_pInputOrderAction, pInputOrderAction, sizeof(CThostFtdcInputOrderActionField));
-	this->invoke(_pInputOrderAction, T_ACTION_RE, callback, uuid);
+	this->invoke(_pInputOrderAction, T_ACTION_RE,  uuid);
 }
-void uv_trader::ReqQryInstrumentMarginRate(CThostFtdcQryInstrumentMarginRateField *pQryInstrumentMarginRate, uvtrader_rtcallback callback, int uuid) {
+void uv_trader::ReqQryInstrumentMarginRate(CThostFtdcQryInstrumentMarginRateField *pQryInstrumentMarginRate,  int uuid) {
 	CThostFtdcQryInstrumentMarginRateField *_pQryInstrumentMarginRate = new CThostFtdcQryInstrumentMarginRateField();
 	memcpy(_pQryInstrumentMarginRate, pQryInstrumentMarginRate, sizeof(CThostFtdcQryInstrumentMarginRateField));
-	this->invoke(_pQryInstrumentMarginRate, T_MARGINRATE_RE, callback, uuid);
+	this->invoke(_pQryInstrumentMarginRate, T_MARGINRATE_RE,  uuid);
 }
-void uv_trader::ReqQryDepthMarketData(CThostFtdcQryDepthMarketDataField *pQryDepthMarketData, uvtrader_rtcallback callback, int uuid) {
+void uv_trader::ReqQryDepthMarketData(CThostFtdcQryDepthMarketDataField *pQryDepthMarketData,  int uuid) {
 	CThostFtdcQryDepthMarketDataField *_pQryDepthMarketData = new CThostFtdcQryDepthMarketDataField();
 	memcpy(_pQryDepthMarketData, pQryDepthMarketData, sizeof(CThostFtdcQryDepthMarketDataField));
-	this->invoke(_pQryDepthMarketData, T_DEPTHMARKETDATA_RE, callback, uuid);
+	this->invoke(_pQryDepthMarketData, T_DEPTHMARKETDATA_RE,  uuid);
 }
-void uv_trader::ReqQrySettlementInfo(CThostFtdcQrySettlementInfoField *pQrySettlementInfo, uvtrader_rtcallback callback, int uuid) {
+void uv_trader::ReqQrySettlementInfo(CThostFtdcQrySettlementInfoField *pQrySettlementInfo,  int uuid) {
 	CThostFtdcQrySettlementInfoField *_pQrySettlementInfo = new CThostFtdcQrySettlementInfoField();
 	memcpy(_pQrySettlementInfo, pQrySettlementInfo, sizeof(CThostFtdcQrySettlementInfoField));
-	this->invoke(_pQrySettlementInfo, T_SETTLEMENTINFO_RE, callback, uuid);
+	this->invoke(_pQrySettlementInfo, T_SETTLEMENTINFO_RE,  uuid);
 }
 
 const char* uv_trader::GetTradingDay(){
@@ -453,9 +444,9 @@ void uv_trader::_on_async(uv_work_t * work){
 
 void uv_trader::_on_completed(uv_work_t * work,int){
 	CbRtnField* cbTrnField = static_cast<CbRtnField*>(work->data);
-	std::map<int, CbWrap<WrapTrader>*>::iterator it = cb_map.find(cbTrnField->eFlag);
+	std::map<int, WrapTrader*>::iterator it = cb_map.find(cbTrnField->eFlag);
 	if (it != cb_map.end()) {
-		cb_map[cbTrnField->eFlag]->call(cbTrnField);
+		cb_map[cbTrnField->eFlag]->FunCallback(cbTrnField);
 	}
 	if (cbTrnField->rtnField)
 		delete cbTrnField->rtnField;
@@ -464,11 +455,10 @@ void uv_trader::_on_completed(uv_work_t * work,int){
 	delete cbTrnField;
 }
 
-void uv_trader::invoke(void* field, int ret, uvtrader_rtcallback callback, int uuid) {
+void uv_trader::invoke(void* field, int ret,  int uuid) {
 	LookupCtpApiBaton<WrapTrader>* baton = new LookupCtpApiBaton<WrapTrader>();//完成函数中需要销毁
 	baton->work.data = baton;
 	baton->uv_trader_obj = this;
-	baton->callback = callback;
 	baton->args = field;
 	baton->fun = ret;
 	baton->uuid = uuid;

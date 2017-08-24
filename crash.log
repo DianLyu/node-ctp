@@ -1,0 +1,399 @@
+PID 8356 received SIGSEGV for address: 0xfae1131d
+SymInit: Symbol-SearchPath: '.;E:\node-ctp;C:\Program Files\nodejs;C:\Windows;C:\Windows\system32;SRV*C:\websymbols*http://msdl.microsoft.com/download/symbols;', symOptions: 530, UserName: '17080854'
+OS-Version: 6.1.7601 (Service Pack 1) 0x100-0x1
+e:\node-ctp\node_modules\segfault-handler\src\stackwalker.cpp (941): StackWalker::ShowCallstack
+e:\node-ctp\node_modules\segfault-handler\src\segfault-handler.cpp (116): segfault_handler
+00000000778098EB (ntdll): (filename not available): vsprintf_s
+00000000778081F2 (ntdll): (filename not available): RtlUnwindEx
+000000007783BCB8 (ntdll): (filename not available): KiUserExceptionDispatcher
+e:\node-ctp\node_modules\segfault-handler\src\segfault-handler.cpp (140): segfault_stack_frame_1
+e:\node-ctp\node_modules\nan\nan_callbacks_12_inl.h (175): Nan::imp::FunctionCallbackWrapper
+00000001400D86B0 (node): (filename not available): v8::internal::interpreter::TryFinallyBuilder::BeginFinally
+000000013FC88E93 (node): (filename not available): v8::internal::Compiler::PostInstantiation
+000000013FC87D41 (node): (filename not available): v8::internal::Compiler::PostInstantiation
+000000013FC87C2B (node): (filename not available): v8::internal::Compiler::PostInstantiation
+00000359E34040E1 ((module-name not available)): (filename not available): (function-name not available)
+00000359E34F3F28 ((module-name not available)): (filename not available): (function-name not available)
+000001EF93882241 ((module-name not available)): (filename not available): (function-name not available)
+000003E2B58CBAF1 ((module-name not available)): (filename not available): (function-name not available)
+000001EF9389A9E1 ((module-name not available)): (filename not available): (function-name not available)
+000003E2B58C4611 ((module-name not available)): (filename not available): (function-name not available)
+0000004D00000000 ((module-name not available)): (filename not available): (function-name not available)
+00000359E3404001 ((module-name not available)): (filename not available): (function-name not available)
+00000000002FDF40 ((module-name not available)): (filename not available): (function-name not available)
+0000000000000006 ((module-name not available)): (filename not available): (function-name not available)
+00000000002FDFC0 ((module-name not available)): (filename not available): (function-name not available)
+00000359E34F4849 ((module-name not available)): (filename not available): (function-name not available)
+000001EF93882241 ((module-name not available)): (filename not available): (function-name not available)
+000003E2B58D4F21 ((module-name not available)): (filename not available): (function-name not available)
+0000000400000000 ((module-name not available)): (filename not available): (function-name not available)
+000002E0949BA141 ((module-name not available)): (filename not available): (function-name not available)
+0000000000000016 ((module-name not available)): (filename not available): (function-name not available)
+00000000002FE068 ((module-name not available)): (filename not available): (function-name not available)
+00000359E3413035 ((module-name not available)): (filename not available): (function-name not available)
+000003E2B58833D1 ((module-name not available)): (filename not available): (function-name not available)
+00000101BF4FE809 ((module-name not available)): (filename not available): (function-name not available)
+000001EF938E1669 ((module-name not available)): (filename not available): (function-name not available)
+000002E094997719 ((module-name not available)): (filename not available): (function-name not available)
+0000036ABCC1DCC9 ((module-name not available)): (filename not available): (function-name not available)
+000002E0949BBB79 ((module-name not available)): (filename not available): (function-name not available)
+000003E2B58C37E9 ((module-name not available)): (filename not available): (function-name not available)
+000003E2B58C37B1 ((module-name not available)): (filename not available): (function-name not available)
+000002E0949BB931 ((module-name not available)): (filename not available): (function-name not available)
+000003E2B58D4F21 ((module-name not available)): (filename not available): (function-name not available)
+000002E0949BB931 ((module-name not available)): (filename not available): (function-name not available)
+000002E0949BA141 ((module-name not available)): (filename not available): (function-name not available)
+000002E09499B749 ((module-name not available)): (filename not available): (function-name not available)
+000002E094996501 ((module-name not available)): (filename not available): (function-name not available)
+0000016C00000000 ((module-name not available)): (filename not available): (function-name not available)
+000003E2B58C41F1 ((module-name not available)): (filename not available): (function-name not available)
+000001EF93882241 ((module-name not available)): (filename not available): (function-name not available)
+000002E094993B41 ((module-name not available)): (filename not available): (function-name not available)
+000001EF9389A9E1 ((module-name not available)): (filename not available): (function-name not available)
+00000000002FE0E8 ((module-name not available)): (filename not available): (function-name not available)
+00000359E34F3F28 ((module-name not available)): (filename not available): (function-name not available)
+000002E094993B89 ((module-name not available)): (filename not available): (function-name not available)
+000002E094991119 ((module-name not available)): (filename not available): (function-name not available)
+000002E094991DA1 ((module-name not available)): (filename not available): (function-name not available)
+000002E094993BF1 ((module-name not available)): (filename not available): (function-name not available)
+PID 5248 received SIGSEGV for address: 0xfaf3131d
+SymInit: Symbol-SearchPath: '.;E:\node-ctp;C:\Program Files\nodejs;C:\Windows;C:\Windows\system32;SRV*C:\websymbols*http://msdl.microsoft.com/download/symbols;', symOptions: 530, UserName: '17080854'
+OS-Version: 6.1.7601 (Service Pack 1) 0x100-0x1
+e:\node-ctp\node_modules\segfault-handler\src\stackwalker.cpp (941): StackWalker::ShowCallstack
+e:\node-ctp\node_modules\segfault-handler\src\segfault-handler.cpp (116): segfault_handler
+00000000778098EB (ntdll): (filename not available): vsprintf_s
+00000000778081F2 (ntdll): (filename not available): RtlUnwindEx
+000000007783BCB8 (ntdll): (filename not available): KiUserExceptionDispatcher
+e:\node-ctp\node_modules\segfault-handler\src\segfault-handler.cpp (140): segfault_stack_frame_1
+e:\node-ctp\node_modules\nan\nan_callbacks_12_inl.h (175): Nan::imp::FunctionCallbackWrapper
+00000001408186B0 (node): (filename not available): v8::internal::interpreter::TryFinallyBuilder::BeginFinally
+00000001403C8E93 (node): (filename not available): v8::internal::Compiler::PostInstantiation
+00000001403C7D41 (node): (filename not available): v8::internal::Compiler::PostInstantiation
+00000001403C7C2B (node): (filename not available): v8::internal::Compiler::PostInstantiation
+000003FD9BE040E1 ((module-name not available)): (filename not available): (function-name not available)
+000003FD9BEF3F28 ((module-name not available)): (filename not available): (function-name not available)
+000000AB6B782241 ((module-name not available)): (filename not available): (function-name not available)
+0000029F412CBAF1 ((module-name not available)): (filename not available): (function-name not available)
+000000AB6B79A9E1 ((module-name not available)): (filename not available): (function-name not available)
+0000029F412C4611 ((module-name not available)): (filename not available): (function-name not available)
+0000004D00000000 ((module-name not available)): (filename not available): (function-name not available)
+000003FD9BE04001 ((module-name not available)): (filename not available): (function-name not available)
+000000000017DCE0 ((module-name not available)): (filename not available): (function-name not available)
+0000000000000006 ((module-name not available)): (filename not available): (function-name not available)
+000000000017DD60 ((module-name not available)): (filename not available): (function-name not available)
+000003FD9BEF4849 ((module-name not available)): (filename not available): (function-name not available)
+000000AB6B782241 ((module-name not available)): (filename not available): (function-name not available)
+0000029F412D4F21 ((module-name not available)): (filename not available): (function-name not available)
+0000000400000000 ((module-name not available)): (filename not available): (function-name not available)
+000003B43993A0E1 ((module-name not available)): (filename not available): (function-name not available)
+0000000000000016 ((module-name not available)): (filename not available): (function-name not available)
+000000000017DE08 ((module-name not available)): (filename not available): (function-name not available)
+000003FD9BE13035 ((module-name not available)): (filename not available): (function-name not available)
+0000029F412833F1 ((module-name not available)): (filename not available): (function-name not available)
+0000005368F7E809 ((module-name not available)): (filename not available): (function-name not available)
+000000AB6B7E1669 ((module-name not available)): (filename not available): (function-name not available)
+000003B4399176B9 ((module-name not available)): (filename not available): (function-name not available)
+00000363FB29DCC9 ((module-name not available)): (filename not available): (function-name not available)
+000003B43993BB19 ((module-name not available)): (filename not available): (function-name not available)
+0000029F412C37E9 ((module-name not available)): (filename not available): (function-name not available)
+0000029F412C37B1 ((module-name not available)): (filename not available): (function-name not available)
+000003B43993B8D1 ((module-name not available)): (filename not available): (function-name not available)
+0000029F412D4F21 ((module-name not available)): (filename not available): (function-name not available)
+000003B43993B8D1 ((module-name not available)): (filename not available): (function-name not available)
+000003B43993A0E1 ((module-name not available)): (filename not available): (function-name not available)
+000003B43991B6A9 ((module-name not available)): (filename not available): (function-name not available)
+000003B4399164A1 ((module-name not available)): (filename not available): (function-name not available)
+0000016C00000000 ((module-name not available)): (filename not available): (function-name not available)
+0000029F412C41F1 ((module-name not available)): (filename not available): (function-name not available)
+000000AB6B782241 ((module-name not available)): (filename not available): (function-name not available)
+000003B439913AE1 ((module-name not available)): (filename not available): (function-name not available)
+000000AB6B79A9E1 ((module-name not available)): (filename not available): (function-name not available)
+000000000017DE88 ((module-name not available)): (filename not available): (function-name not available)
+000003FD9BEF3F28 ((module-name not available)): (filename not available): (function-name not available)
+000003B439913B29 ((module-name not available)): (filename not available): (function-name not available)
+000003B439911119 ((module-name not available)): (filename not available): (function-name not available)
+000003B439911D41 ((module-name not available)): (filename not available): (function-name not available)
+000003B439913B91 ((module-name not available)): (filename not available): (function-name not available)
+PID 4032 received SIGSEGV for address: 0xd9289d62
+SymInit: Symbol-SearchPath: '.;E:\node-ctp;C:\Program Files\nodejs;C:\Windows;C:\Windows\system32;SRV*C:\websymbols*http://msdl.microsoft.com/download/symbols;', symOptions: 530, UserName: '17080854'
+OS-Version: 6.1.7601 (Service Pack 1) 0x100-0x1
+e:\node-ctp\node_modules\segfault-handler\src\stackwalker.cpp (941): StackWalker::ShowCallstack
+e:\node-ctp\node_modules\segfault-handler\src\segfault-handler.cpp (116): segfault_handler
+00000000778098EB (ntdll): (filename not available): vsprintf_s
+00000000778081F2 (ntdll): (filename not available): RtlUnwindEx
+000000007783BCB8 (ntdll): (filename not available): KiUserExceptionDispatcher
+e:\node-ctp\src\uv_mduser.cpp (217): uv_mduser::_completed
+000000013F911A73 (node): (filename not available): uv_dlerror
+000000013F9119D7 (node): (filename not available): uv_dlerror
+000000013F903C3B (node): (filename not available): uv_async_send
+000000013F904E84 (node): (filename not available): uv_stream_set_blocking
+000000013F905B38 (node): (filename not available): uv_run
+000000013F68F6C4 (node): (filename not available): node::FreeEnvironment
+000000013F68FADE (node): (filename not available): node::FreeEnvironment
+000000013F68FDF8 (node): (filename not available): node::Start
+000000014028A065 (node): (filename not available): uncompress
+00000000776E59CD (kernel32): (filename not available): BaseThreadInitThunk
+000000007781A561 (ntdll): (filename not available): RtlUserThreadStart
+PID 10292 received SIGSEGV for address: 0xfabf9d6e
+SymInit: Symbol-SearchPath: '.;E:\node-ctp;C:\Program Files\nodejs;C:\Windows;C:\Windows\system32;SRV*C:\websymbols*http://msdl.microsoft.com/download/symbols;', symOptions: 530, UserName: '17080854'
+OS-Version: 6.1.7601 (Service Pack 1) 0x100-0x1
+e:\node-ctp\node_modules\segfault-handler\src\stackwalker.cpp (941): StackWalker::ShowCallstack
+e:\node-ctp\node_modules\segfault-handler\src\segfault-handler.cpp (116): segfault_handler
+00000000778098EB (ntdll): (filename not available): vsprintf_s
+00000000778081F2 (ntdll): (filename not available): RtlUnwindEx
+000000007783BCB8 (ntdll): (filename not available): KiUserExceptionDispatcher
+e:\node-ctp\src\uv_mduser.cpp (218): uv_mduser::_completed
+0000000140241A73 (node): (filename not available): uv_dlerror
+00000001402419D7 (node): (filename not available): uv_dlerror
+0000000140233C3B (node): (filename not available): uv_async_send
+0000000140234E84 (node): (filename not available): uv_stream_set_blocking
+0000000140235B38 (node): (filename not available): uv_run
+000000013FFBF6C4 (node): (filename not available): node::FreeEnvironment
+000000013FFBFADE (node): (filename not available): node::FreeEnvironment
+000000013FFBFDF8 (node): (filename not available): node::Start
+0000000140BBA065 (node): (filename not available): uncompress
+00000000776E59CD (kernel32): (filename not available): BaseThreadInitThunk
+000000007781A561 (ntdll): (filename not available): RtlUserThreadStart
+PID 3208 received SIGSEGV for address: 0xfabf9d7e
+SymInit: Symbol-SearchPath: '.;E:\node-ctp;C:\Program Files\nodejs;C:\Windows;C:\Windows\system32;SRV*C:\websymbols*http://msdl.microsoft.com/download/symbols;', symOptions: 530, UserName: '17080854'
+OS-Version: 6.1.7601 (Service Pack 1) 0x100-0x1
+e:\node-ctp\node_modules\segfault-handler\src\stackwalker.cpp (941): StackWalker::ShowCallstack
+e:\node-ctp\node_modules\segfault-handler\src\segfault-handler.cpp (116): segfault_handler
+00000000778098EB (ntdll): (filename not available): vsprintf_s
+00000000778081F2 (ntdll): (filename not available): RtlUnwindEx
+000000007783BCB8 (ntdll): (filename not available): KiUserExceptionDispatcher
+e:\node-ctp\src\uv_mduser.cpp (221): uv_mduser::_completed
+000000013FDF1A73 (node): (filename not available): uv_dlerror
+000000013FDF19D7 (node): (filename not available): uv_dlerror
+000000013FDE3C3B (node): (filename not available): uv_async_send
+000000013FDE4E84 (node): (filename not available): uv_stream_set_blocking
+000000013FDE5B38 (node): (filename not available): uv_run
+000000013FB6F6C4 (node): (filename not available): node::FreeEnvironment
+000000013FB6FADE (node): (filename not available): node::FreeEnvironment
+000000013FB6FDF8 (node): (filename not available): node::Start
+000000014076A065 (node): (filename not available): uncompress
+00000000776E59CD (kernel32): (filename not available): BaseThreadInitThunk
+000000007781A561 (ntdll): (filename not available): RtlUserThreadStart
+PID 11124 received SIGSEGV for address: 0xdb389dc1
+SymInit: Symbol-SearchPath: '.;E:\node-ctp;C:\Program Files\nodejs;C:\Windows;C:\Windows\system32;SRV*C:\websymbols*http://msdl.microsoft.com/download/symbols;', symOptions: 530, UserName: '17080854'
+OS-Version: 6.1.7601 (Service Pack 1) 0x100-0x1
+e:\node-ctp\node_modules\segfault-handler\src\stackwalker.cpp (941): StackWalker::ShowCallstack
+e:\node-ctp\node_modules\segfault-handler\src\segfault-handler.cpp (116): segfault_handler
+00000000778098EB (ntdll): (filename not available): vsprintf_s
+00000000778081F2 (ntdll): (filename not available): RtlUnwindEx
+000000007783BCB8 (ntdll): (filename not available): KiUserExceptionDispatcher
+e:\node-ctp\src\uv_mduser.cpp (220): uv_mduser::_completed
+000000013F621A73 (node): (filename not available): uv_dlerror
+000000013F6219D7 (node): (filename not available): uv_dlerror
+000000013F613C3B (node): (filename not available): uv_async_send
+000000013F614E84 (node): (filename not available): uv_stream_set_blocking
+000000013F615B38 (node): (filename not available): uv_run
+000000013F39F6C4 (node): (filename not available): node::FreeEnvironment
+000000013F39FADE (node): (filename not available): node::FreeEnvironment
+000000013F39FDF8 (node): (filename not available): node::Start
+000000013FF9A065 (node): (filename not available): uncompress
+00000000776E59CD (kernel32): (filename not available): BaseThreadInitThunk
+000000007781A561 (ntdll): (filename not available): RtlUserThreadStart
+PID 11352 received SIGSEGV for address: 0xdb6b9dc1
+SymInit: Symbol-SearchPath: '.;E:\node-ctp;C:\Program Files\nodejs;C:\Windows;C:\Windows\system32;SRV*C:\websymbols*http://msdl.microsoft.com/download/symbols;', symOptions: 530, UserName: '17080854'
+OS-Version: 6.1.7601 (Service Pack 1) 0x100-0x1
+e:\node-ctp\node_modules\segfault-handler\src\stackwalker.cpp (941): StackWalker::ShowCallstack
+e:\node-ctp\node_modules\segfault-handler\src\segfault-handler.cpp (116): segfault_handler
+00000000778098EB (ntdll): (filename not available): vsprintf_s
+00000000778081F2 (ntdll): (filename not available): RtlUnwindEx
+000000007783BCB8 (ntdll): (filename not available): KiUserExceptionDispatcher
+e:\node-ctp\src\uv_mduser.cpp (220): uv_mduser::_completed
+000000013F941A73 (node): (filename not available): uv_dlerror
+000000013F9419D7 (node): (filename not available): uv_dlerror
+000000013F933C3B (node): (filename not available): uv_async_send
+000000013F934E84 (node): (filename not available): uv_stream_set_blocking
+000000013F935B38 (node): (filename not available): uv_run
+000000013F6BF6C4 (node): (filename not available): node::FreeEnvironment
+000000013F6BFADE (node): (filename not available): node::FreeEnvironment
+000000013F6BFDF8 (node): (filename not available): node::Start
+00000001402BA065 (node): (filename not available): uncompress
+00000000776E59CD (kernel32): (filename not available): BaseThreadInitThunk
+000000007781A561 (ntdll): (filename not available): RtlUserThreadStart
+PID 11560 received SIGSEGV for address: 0xdb6b9dc1
+SymInit: Symbol-SearchPath: '.;E:\node-ctp;C:\Program Files\nodejs;C:\Windows;C:\Windows\system32;SRV*C:\websymbols*http://msdl.microsoft.com/download/symbols;', symOptions: 530, UserName: '17080854'
+OS-Version: 6.1.7601 (Service Pack 1) 0x100-0x1
+e:\node-ctp\node_modules\segfault-handler\src\stackwalker.cpp (941): StackWalker::ShowCallstack
+e:\node-ctp\node_modules\segfault-handler\src\segfault-handler.cpp (116): segfault_handler
+00000000778098EB (ntdll): (filename not available): vsprintf_s
+00000000778081F2 (ntdll): (filename not available): RtlUnwindEx
+000000007783BCB8 (ntdll): (filename not available): KiUserExceptionDispatcher
+e:\node-ctp\src\uv_mduser.cpp (220): uv_mduser::_completed
+000000013F531A73 (node): (filename not available): uv_dlerror
+000000013F5319D7 (node): (filename not available): uv_dlerror
+000000013F523C3B (node): (filename not available): uv_async_send
+000000013F524E84 (node): (filename not available): uv_stream_set_blocking
+000000013F525B38 (node): (filename not available): uv_run
+000000013F2AF6C4 (node): (filename not available): node::FreeEnvironment
+000000013F2AFADE (node): (filename not available): node::FreeEnvironment
+000000013F2AFDF8 (node): (filename not available): node::Start
+000000013FEAA065 (node): (filename not available): uncompress
+00000000776E59CD (kernel32): (filename not available): BaseThreadInitThunk
+000000007781A561 (ntdll): (filename not available): RtlUserThreadStart
+PID 6340 received SIGSEGV for address: 0xdb6b9d62
+SymInit: Symbol-SearchPath: '.;E:\node-ctp;C:\Program Files\nodejs;C:\Windows;C:\Windows\system32;SRV*C:\websymbols*http://msdl.microsoft.com/download/symbols;', symOptions: 530, UserName: '17080854'
+OS-Version: 6.1.7601 (Service Pack 1) 0x100-0x1
+e:\node-ctp\node_modules\segfault-handler\src\stackwalker.cpp (941): StackWalker::ShowCallstack
+e:\node-ctp\node_modules\segfault-handler\src\segfault-handler.cpp (116): segfault_handler
+00000000778098EB (ntdll): (filename not available): vsprintf_s
+00000000778081F2 (ntdll): (filename not available): RtlUnwindEx
+000000007783BCB8 (ntdll): (filename not available): KiUserExceptionDispatcher
+e:\node-ctp\src\uv_mduser.cpp (217): uv_mduser::_completed
+000000013F611A73 (node): (filename not available): uv_dlerror
+000000013F6119D7 (node): (filename not available): uv_dlerror
+000000013F603C3B (node): (filename not available): uv_async_send
+000000013F604E84 (node): (filename not available): uv_stream_set_blocking
+000000013F605B38 (node): (filename not available): uv_run
+000000013F38F6C4 (node): (filename not available): node::FreeEnvironment
+000000013F38FADE (node): (filename not available): node::FreeEnvironment
+000000013F38FDF8 (node): (filename not available): node::Start
+000000013FF8A065 (node): (filename not available): uncompress
+00000000776E59CD (kernel32): (filename not available): BaseThreadInitThunk
+000000007781A561 (ntdll): (filename not available): RtlUserThreadStart
+PID 8092 received SIGSEGV for address: 0xdb6b9d62
+SymInit: Symbol-SearchPath: '.;E:\node-ctp;C:\Program Files\nodejs;C:\Windows;C:\Windows\system32;SRV*C:\websymbols*http://msdl.microsoft.com/download/symbols;', symOptions: 530, UserName: '17080854'
+OS-Version: 6.1.7601 (Service Pack 1) 0x100-0x1
+e:\node-ctp\node_modules\segfault-handler\src\stackwalker.cpp (941): StackWalker::ShowCallstack
+e:\node-ctp\node_modules\segfault-handler\src\segfault-handler.cpp (116): segfault_handler
+00000000778098EB (ntdll): (filename not available): vsprintf_s
+00000000778081F2 (ntdll): (filename not available): RtlUnwindEx
+000000007783BCB8 (ntdll): (filename not available): KiUserExceptionDispatcher
+e:\node-ctp\src\uv_mduser.cpp (217): uv_mduser::_completed
+000000013F491A73 (node): (filename not available): uv_dlerror
+000000013F4919D7 (node): (filename not available): uv_dlerror
+000000013F483C3B (node): (filename not available): uv_async_send
+000000013F484E84 (node): (filename not available): uv_stream_set_blocking
+000000013F485B38 (node): (filename not available): uv_run
+000000013F20F6C4 (node): (filename not available): node::FreeEnvironment
+000000013F20FADE (node): (filename not available): node::FreeEnvironment
+000000013F20FDF8 (node): (filename not available): node::Start
+000000013FE0A065 (node): (filename not available): uncompress
+00000000776E59CD (kernel32): (filename not available): BaseThreadInitThunk
+000000007781A561 (ntdll): (filename not available): RtlUserThreadStart
+PID 512 received SIGSEGV for address: 0x3fd64947
+SymInit: Symbol-SearchPath: '.;E:\node-ctp;C:\Program Files\nodejs;C:\Windows;C:\Windows\system32;SRV*C:\websymbols*http://msdl.microsoft.com/download/symbols;', symOptions: 530, UserName: '17080854'
+OS-Version: 6.1.7601 (Service Pack 1) 0x100-0x1
+e:\node-ctp\node_modules\segfault-handler\src\stackwalker.cpp (941): StackWalker::ShowCallstack
+e:\node-ctp\node_modules\segfault-handler\src\segfault-handler.cpp (116): segfault_handler
+00000000778098EB (ntdll): (filename not available): vsprintf_s
+00000000778081F2 (ntdll): (filename not available): RtlUnwindEx
+000000007783BCB8 (ntdll): (filename not available): KiUserExceptionDispatcher
+000000013FD64947 (node): (filename not available): v8::internal::HashTable<v8::internal::SeededNumberDictionary,v8::internal::SeededNumberDictionaryShape,unsigned int>::SetCapacity
+000000013FC18346 (node): (filename not available): v8::internal::LookupIterator::Start<1>
+000000013FC17EA0 (node): (filename not available): v8::internal::LookupIterator::Start<1>
+000000013FD291CE (node): (filename not available): v8::internal::operator<<
+000000013FD3E1D7 (node): (filename not available): v8::internal::JSReceiver::GetOwnPropertyDescriptor
+000000013FD24F93 (node): (filename not available): v8::internal::operator<<
+000000013FB96701 (node): (filename not available): v8::internal::modulo
+000000A68D1840E1 ((module-name not available)): (filename not available): (function-name not available)
+00000000002CDB68 ((module-name not available)): (filename not available): (function-name not available)
+00000304A1438EE1 ((module-name not available)): (filename not available): (function-name not available)
+0000000000000040 ((module-name not available)): (filename not available): (function-name not available)
+000001DC10FFDBC1 ((module-name not available)): (filename not available): (function-name not available)
+000001B331C02241 ((module-name not available)): (filename not available): (function-name not available)
+00000304A14754D1 ((module-name not available)): (filename not available): (function-name not available)
+000000A68D184001 ((module-name not available)): (filename not available): (function-name not available)
+00000000002CDB20 ((module-name not available)): (filename not available): (function-name not available)
+0000000000000006 ((module-name not available)): (filename not available): (function-name not available)
+00000000002CDB88 ((module-name not available)): (filename not available): (function-name not available)
+000000A68D19A38F ((module-name not available)): (filename not available): (function-name not available)
+000001B331C1A9E1 ((module-name not available)): (filename not available): (function-name not available)
+0000000000000016 ((module-name not available)): (filename not available): (function-name not available)
+00000000002CDBC0 ((module-name not available)): (filename not available): (function-name not available)
+000000A68D27636A ((module-name not available)): (filename not available): (function-name not available)
+000000A68D26D240 ((module-name not available)): (filename not available): (function-name not available)
+0000000000000344 ((module-name not available)): (filename not available): (function-name not available)
+PID 8752 received SIGSEGV for address: 0x0
+SymInit: Symbol-SearchPath: '.;E:\node-ctp;C:\Program Files\nodejs;C:\Windows;C:\Windows\system32;SRV*C:\websymbols*http://msdl.microsoft.com/download/symbols;', symOptions: 530, UserName: '17080854'
+OS-Version: 6.1.7601 (Service Pack 1) 0x100-0x1
+e:\node-ctp\node_modules\segfault-handler\src\stackwalker.cpp (941): StackWalker::ShowCallstack
+e:\node-ctp\node_modules\segfault-handler\src\segfault-handler.cpp (116): segfault_handler
+00000000778098EB (ntdll): (filename not available): vsprintf_s
+00000000778081F2 (ntdll): (filename not available): RtlUnwindEx
+000000007783BCB8 (ntdll): (filename not available): KiUserExceptionDispatcher
+PID 11348 received SIGSEGV for address: 0x0
+SymInit: Symbol-SearchPath: '.;e:\node-ctp;C:\Program Files\nodejs;C:\Windows;C:\Windows\system32;SRV*C:\websymbols*http://msdl.microsoft.com/download/symbols;', symOptions: 530, UserName: '17080854'
+OS-Version: 6.1.7601 (Service Pack 1) 0x100-0x1
+e:\node-ctp\node_modules\segfault-handler\src\stackwalker.cpp (941): StackWalker::ShowCallstack
+e:\node-ctp\node_modules\segfault-handler\src\segfault-handler.cpp (116): segfault_handler
+00000000778098EB (ntdll): (filename not available): vsprintf_s
+00000000778081F2 (ntdll): (filename not available): RtlUnwindEx
+000000007783BCB8 (ntdll): (filename not available): KiUserExceptionDispatcher
+PID 10724 received SIGSEGV for address: 0x0
+SymInit: Symbol-SearchPath: '.;E:\node-ctp;C:\Program Files\nodejs;C:\Windows;C:\Windows\system32;SRV*C:\websymbols*http://msdl.microsoft.com/download/symbols;', symOptions: 530, UserName: '17080854'
+OS-Version: 6.1.7601 (Service Pack 1) 0x100-0x1
+e:\node-ctp\node_modules\segfault-handler\src\stackwalker.cpp (941): StackWalker::ShowCallstack
+e:\node-ctp\node_modules\segfault-handler\src\segfault-handler.cpp (116): segfault_handler
+00000000778098EB (ntdll): (filename not available): vsprintf_s
+00000000778081F2 (ntdll): (filename not available): RtlUnwindEx
+000000007783BCB8 (ntdll): (filename not available): KiUserExceptionDispatcher
+PID 12760 received SIGSEGV for address: 0x3f824947
+SymInit: Symbol-SearchPath: '.;E:\node-ctp;C:\Program Files\nodejs;C:\Windows;C:\Windows\system32;SRV*C:\websymbols*http://msdl.microsoft.com/download/symbols;', symOptions: 530, UserName: '17080854'
+OS-Version: 6.1.7601 (Service Pack 1) 0x100-0x1
+e:\node-ctp\node_modules\segfault-handler\src\stackwalker.cpp (941): StackWalker::ShowCallstack
+e:\node-ctp\node_modules\segfault-handler\src\segfault-handler.cpp (116): segfault_handler
+00000000778098EB (ntdll): (filename not available): vsprintf_s
+00000000778081F2 (ntdll): (filename not available): RtlUnwindEx
+000000007783BCB8 (ntdll): (filename not available): KiUserExceptionDispatcher
+000000013F824947 (node): (filename not available): v8::internal::HashTable<v8::internal::SeededNumberDictionary,v8::internal::SeededNumberDictionaryShape,unsigned int>::SetCapacity
+000000013F6D8346 (node): (filename not available): v8::internal::LookupIterator::Start<1>
+000000013F6D7EA0 (node): (filename not available): v8::internal::LookupIterator::Start<1>
+000000013F7E91CE (node): (filename not available): v8::internal::operator<<
+000000013F7FE1D7 (node): (filename not available): v8::internal::JSReceiver::GetOwnPropertyDescriptor
+000000013F7E4F93 (node): (filename not available): v8::internal::operator<<
+000000013F656701 (node): (filename not available): v8::internal::modulo
+000001B9E30040E1 ((module-name not available)): (filename not available): (function-name not available)
+00000000001AD728 ((module-name not available)): (filename not available): (function-name not available)
+000001EED60B8EE1 ((module-name not available)): (filename not available): (function-name not available)
+0000000000000040 ((module-name not available)): (filename not available): (function-name not available)
+0000000000367448 ((module-name not available)): (filename not available): (function-name not available)
+00000129E7882241 ((module-name not available)): (filename not available): (function-name not available)
+000001EED60F54D1 ((module-name not available)): (filename not available): (function-name not available)
+000001B9E3004001 ((module-name not available)): (filename not available): (function-name not available)
+00000000001AD6E0 ((module-name not available)): (filename not available): (function-name not available)
+0000000000000006 ((module-name not available)): (filename not available): (function-name not available)
+00000000001AD748 ((module-name not available)): (filename not available): (function-name not available)
+000001B9E301A38F ((module-name not available)): (filename not available): (function-name not available)
+00000129E789A9E1 ((module-name not available)): (filename not available): (function-name not available)
+0000000000000016 ((module-name not available)): (filename not available): (function-name not available)
+00000000001AD780 ((module-name not available)): (filename not available): (function-name not available)
+000001B9E30F636A ((module-name not available)): (filename not available): (function-name not available)
+000001B9E30ED240 ((module-name not available)): (filename not available): (function-name not available)
+0000000000000344 ((module-name not available)): (filename not available): (function-name not available)
+PID 9616 received SIGSEGV for address: 0x3fc94947
+SymInit: Symbol-SearchPath: '.;E:\node-ctp;C:\Program Files\nodejs;C:\Windows;C:\Windows\system32;SRV*C:\websymbols*http://msdl.microsoft.com/download/symbols;', symOptions: 530, UserName: '17080854'
+OS-Version: 6.1.7601 (Service Pack 1) 0x100-0x1
+e:\node-ctp\node_modules\segfault-handler\src\stackwalker.cpp (941): StackWalker::ShowCallstack
+e:\node-ctp\node_modules\segfault-handler\src\segfault-handler.cpp (116): segfault_handler
+00000000778098EB (ntdll): (filename not available): vsprintf_s
+00000000778081F2 (ntdll): (filename not available): RtlUnwindEx
+000000007783BCB8 (ntdll): (filename not available): KiUserExceptionDispatcher
+000000013FC94947 (node): (filename not available): v8::internal::HashTable<v8::internal::SeededNumberDictionary,v8::internal::SeededNumberDictionaryShape,unsigned int>::SetCapacity
+000000013FB48346 (node): (filename not available): v8::internal::LookupIterator::Start<1>
+000000013FB47EA0 (node): (filename not available): v8::internal::LookupIterator::Start<1>
+000000013FC591CE (node): (filename not available): v8::internal::operator<<
+000000013FC6E1D7 (node): (filename not available): v8::internal::JSReceiver::GetOwnPropertyDescriptor
+000000013FC54F93 (node): (filename not available): v8::internal::operator<<
+000000013FAC6701 (node): (filename not available): v8::internal::modulo
+000003588F8840E1 ((module-name not available)): (filename not available): (function-name not available)
+00000000002CDB38 ((module-name not available)): (filename not available): (function-name not available)
+0000031BB3138EE1 ((module-name not available)): (filename not available): (function-name not available)
+0000000000000040 ((module-name not available)): (filename not available): (function-name not available)
+0000000300000002 ((module-name not available)): (filename not available): (function-name not available)
+0000000100000005 ((module-name not available)): (filename not available): (function-name not available)
+0000047D02EC6601 ((module-name not available)): (filename not available): (function-name not available)
+000003588F884001 ((module-name not available)): (filename not available): (function-name not available)
+00000000002CDAF0 ((module-name not available)): (filename not available): (function-name not available)
+0000000000000006 ((module-name not available)): (filename not available): (function-name not available)
+00000000002CDB58 ((module-name not available)): (filename not available): (function-name not available)
+000003588F89A38F ((module-name not available)): (filename not available): (function-name not available)
+000002213C21A9E1 ((module-name not available)): (filename not available): (function-name not available)
+0000000000000016 ((module-name not available)): (filename not available): (function-name not available)
+00000000002CDB90 ((module-name not available)): (filename not available): (function-name not available)
+000003588F97636A ((module-name not available)): (filename not available): (function-name not available)
+000003588F96D240 ((module-name not available)): (filename not available): (function-name not available)
+0000000000000344 ((module-name not available)): (filename not available): (function-name not available)

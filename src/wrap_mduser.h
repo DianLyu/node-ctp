@@ -33,19 +33,19 @@ public:
 	static void Disposed(const FunctionCallbackInfo<Value>& args);
 	static void Init(Handle<Object> args);
 	static Persistent<Function> constructor;
-private:
-	static void initEventMap();
-	void pkg_cb_userlogin(CbRtnField* data, Local<Value>*cbArray);
-	void pkg_cb_userlogout(CbRtnField* data, Local<Value>*cbArray);
-	void pkg_cb_rspsubmarketdata(CbRtnField* data, Local<Value>*cbArray);
-	void pkg_cb_unrspsubmarketdata(CbRtnField* data, Local<Value>*cbArray);
-	void pkg_cb_rtndepthmarketdata(CbRtnField* data, Local<Value>*cbArray); 
-	void pkg_cb_rsperror(CbRtnField* data, Local<Value>*cbArray);
-	Local<Value> pkg_rspinfo(CThostFtdcRspInfoField *pRspInfo);
-	uv_mduser* uvMdUser;
-	int s_uuid=0;
 	void FunCallback(CbRtnField *data);
 	void FunRtnCallback(int result, void* baton);
+private:
+	static void initEventMap();
+	void pkg_cb_userlogin(Isolate*isolate,CbRtnField* data, Local<Value>cbArray[]);
+	void pkg_cb_userlogout(Isolate*isolate, CbRtnField* data, Local<Value>cbArray[]);
+	void pkg_cb_rspsubmarketdata(Isolate*isolate, CbRtnField* data, Local<Value>cbArray[]);
+	void pkg_cb_unrspsubmarketdata(Isolate*isolate, CbRtnField* data, Local<Value>cbArray[]);
+	void pkg_cb_rtndepthmarketdata(Isolate*isolate, CbRtnField* data, Local<Value>cbArray[]);
+	void pkg_cb_rsperror(Isolate*isolate, CbRtnField* data, Local<Value>cbArray[]);
+	Local<Value> pkg_rspinfo(Isolate*isolate, CThostFtdcRspInfoField *pRspInfo);
+	uv_mduser* uvMdUser;
+	int s_uuid=0;
 	static std::map<const char*, int,ptrCmp> event_map;
 	std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > callback_map;
 	std::map<int, Persistent<Function, CopyablePersistentTraits<Function>> > fun_rtncb_map;

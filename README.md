@@ -18,45 +18,34 @@ Shif发布的CTP接口是基于C++语言开发的，我们使用CTP开发交易�
 
 ```javascript
 
-var ctp = require('bindings')('shifctp');
+var ctp = require('node-ctp');
 ctp.settings({log:true});
-var mduser = ctp.createMduser();
-mduser.on("connect",function(result){
-    console.log('on connect!');
-    meuser.reqUserLogin('brokerid','userid','password',function(result){
-        console.log(result);
-
-    });
-
+var mduser = ctp.createMduser({
+    connect() {
+        console.log("on connected");
+        this.reqUserLogin('', '', '', function(result) {});
+    },
+    rspUserLogin(requestId, isLast, field, info) {
+        console.log("on rspUserLogin", arguments)
+        this.subscribeMarketData(['rb1801'], function(result) {
+            console.log('subscribeMarketData result:' + result);
+        });
+    },
+    rspSubMarketData(requestId, isLast, field, info) {
+        console.log("on rspSubMarketData", arguments)
+    },
+    rspUnSubMarketData(requestId, isLast, field, info) {
+        console.log("on rspUnSubMarketData", arguments)
+    },
+    rtnDepthMarketData(field) {
+        console.log("on rtnDepthMarketData", field);
+    },
+    rspError(requestId, isLast, info) {
+        console.log(requestId, isLast, info)
+    }
 });
 
-mduser.on('rspUserLogin',function(requestId,isLast,field,info){
-    mduser.subscribeMarketData(['IF1503'],function(result){
-        console.log('subscribeMarketData result:' + result);
-    });
-
-});
-
-mduser.on('rspSubMarketData',function (requestId, isLast, field, info){
-        
-
-});
-
-mduser.on('rspUnSubMarketData', function (requestId, isLast, field, info){
-    mduser.disconnect();
-});
-
-mduser.on('rtnDepthMarketData', function (field){
-    console.log(JSON.stringify(field));
-
-});
-
-mduser.on('rspError',function(requestId,isLast,info){
-    //console.log(...);
-
-});
-
-mduser.connect('ctp url', undefined, function (result){
+mduser.connect('ctp url', 'conn/tmp', function (result){
     console.log(result);
 
 });
@@ -68,136 +57,50 @@ mduser.connect('ctp url', undefined, function (result){
 ```javascript
 //confirm
 
-ctp = require('bindings')('shifctp');
+ctp = require('node-ctp');
 ctp.settings({ log: true});
-var trader = ctp.createTrader();
+var trader = ctp.createTrader({
+    connect() {
+        console.log("on connected");
+        this.reqUserLogin('', '', '', function(result, iRequestID) {
+            console.log('login return val is ' + result);
+        });
+    },
+    rspUserLogin(requestId, isLast, field, info) {
 
-trader.on("connect",function(result){
-    console.log("on connected");
-    trader.reqUserLogin('','','',function(result,iRequestID){
-        console.log('login return val is '+result);
-    });
+        console.log(JSON.stringify(field));
+        console.log(info);
+        this.reqQrySettlementInfo('', '', '', function(result, iRequestID) {
+            console.log('settlementinfo return val is ' + result);
 
-});
+        });
+        var tradingDay = this.getTradingDay();
+        console.log(tradingDay);
+    },
+    rspInfoconfirm(requestId, isLast, field, info) {
 
-trader.on('rspUserLogin',function(requestId, isLast, field, info){
-    
-    console.log(JSON.stringify(field));
-    console.log(info);
-});
+        console.log()
 
-trader.on('rspInfoconfirm',function(requestId, isLast, field, info){
+    },
+    rqSettlementInfo(requestId, isLast, field, info) {
+        console.log('rqsettlementinfo callback');
+        console.log(field);
+        console.log(info);
 
-    console.log()
+    },
+    rtnOrder(field) {
+        console.log(field);
+    },
+    rspError(requestId, isLast, field) {
+        console.log(JSON.stringify(field));
 
-});
-
-//query settlement info
-
-trader.on("connect",function(result){
-    console.log("on connected");
-    trader.reqUserLogin('','','',function(result,iRequestID){
-        console.log('login return val is '+result);
-    });
-
-});
-
-trader.on('rspUserLogin',function(requestId, isLast, field, info){
-    
-    console.log(JSON.stringify(field));
-    console.log(info);
-
-    trader.reqQrySettlementInfo('','','',function(result,iRequestID){
-        console.log('settlementinfo return val is '+result);
-
-    });
-});
-
-trader.on('rqSettlementInfo',function(requestId, isLast, field, info){
-    console.log('rqsettlementinfo callback');
-    console.log(field);
-    console.log(info);
-
-});
-
-trader.on('rtnOrder',function(field){
-    console.log(field);
-});
-
-trader.on('rspError',function(requestId, isLast, field){
-    console.log(JSON.stringify(field));
-
+    }
 });
 
 trader.connect('',undefined,0,1,function(result){
     console.log('connect return val is '+result);
 });
 
-//get system trading day
-
-trader.on('rspUserLogin',function(requestId, isLast, field, info){
-    
-    console.log(JSON.stringify(field));
-    console.log(info);
-
-
-    var tradingDay = trader.getTradingDay();
-    console.log(tradingDay);
-
-
-});
-
-
-```
-
-##运行环境
-
-我分别给出了Linux和Windows平台下的工程，由于Shif发布接口文件平台的缘故，Linux版本的运行
-在Node.js x64下，Windows运行在Node.js x86下。注意下载不同版本的Node.js,下载地址：[Download Node.js](http://www.nodejs.org/download/).
-相应的Shif发布的Linux平台下CTP包选用x64的，而Windows平台的选用x86的。下载地址：[Download tradeapi](http://www.sfit.com.cn/5_2_DocumentDown.htm)
-
-    linux:centos 6.4 x64;
-    gcc:v4.4.7 20120313;
-    node-gyp:v1.0.2;
-    node.js:v0.10.26;
-    tradeapi:6.3.0_20140811_traderapi_linux64
-
-    windows:win7 x64;
-    visual studio 2013;
-    node-gyp:v1.0.2;
-    node.js:v0.10.26 x86;
-    tradeapi:6.3.0_20140811_traderapi_win32
-
-##编译
-
-    1.$npm install node-gyp;
-    2.打开binding.gyp文件，把libraries节点的路径修改成自己开发环境的真实路径；
-    3.$node-gyp rebuild;
-
-    注意：windows环境下，node-gyp默认生成vs2010版本的工程，如果没有安装此版本的vs，需要设置环境变量
-    如：GYP_MSVS_VERSION=2013
-
-##API介绍
- 
-```javascript
-//加载shifctp模块
-var ctp = require('bindings')('shifctp');
-//设置日志开关
-ctp.settings({log:true});
-//初始化Mduser对象
-var mduser = ctp.createMduser();
-```
-###初始化CTP，并且连接前置机
-
-```javascript
-mduser.connect('ctp url', undefined, function (result){
-    console.log(result);
-
-});
-//connect event
-mduser.on("connect",function(result){
-    console.log('on connect!');
-});
 
 ```
 
